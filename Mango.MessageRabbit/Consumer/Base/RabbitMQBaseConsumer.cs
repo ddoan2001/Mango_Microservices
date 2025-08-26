@@ -1,11 +1,11 @@
 using log4net;
-using Microsoft.Extensions.Hosting;
+using Mango.Message.RabbitMQ.Models;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
-using Mango.Message.RabbitMQ.Models;
 
 namespace Mango.Message.RabbitMQ.Consumer.Base
 {
@@ -183,58 +183,58 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
         /// Gets the current health status of the RabbitMQ consumer.
         /// Can be used by health check systems and monitoring tools.
         /// </summary>
-        public HealthStatus HealthStatus 
-        { 
-            get 
-            { 
-                lock (_healthLock) 
-                { 
-                    return _healthStatus; 
-                } 
-            } 
+        public HealthStatus HealthStatus
+        {
+            get
+            {
+                lock (_healthLock)
+                {
+                    return _healthStatus;
+                }
+            }
         }
 
         /// <summary>
         /// Gets the last successful message processing timestamp.
         /// Returns null if no messages have been successfully processed yet.
         /// </summary>
-        public DateTime? LastSuccessfulProcessing 
-        { 
-            get 
-            { 
-                lock (_healthLock) 
-                { 
-                    return _lastSuccessfulProcessing; 
-                } 
-            } 
+        public DateTime? LastSuccessfulProcessing
+        {
+            get
+            {
+                lock (_healthLock)
+                {
+                    return _lastSuccessfulProcessing;
+                }
+            }
         }
 
         /// <summary>
         /// Gets the total number of successfully processed messages.
         /// </summary>
-        public long SuccessfulMessageCount 
-        { 
-            get 
-            { 
-                lock (_healthLock) 
-                { 
-                    return _successfulMessageCount; 
-                } 
-            } 
+        public long SuccessfulMessageCount
+        {
+            get
+            {
+                lock (_healthLock)
+                {
+                    return _successfulMessageCount;
+                }
+            }
         }
 
         /// <summary>
         /// Gets the total number of failed message processing attempts.
         /// </summary>
-        public long FailedMessageCount 
-        { 
-            get 
-            { 
-                lock (_healthLock) 
-                { 
-                    return _failedMessageCount; 
-                } 
-            } 
+        public long FailedMessageCount
+        {
+            get
+            {
+                lock (_healthLock)
+                {
+                    return _failedMessageCount;
+                }
+            }
         }
 
         /// <summary>
@@ -290,7 +290,7 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
 
                     // Check if messages are being processed (within last 5 minutes for active systems)
                     var fiveMinutesAgo = DateTime.UtcNow.AddMinutes(-5);
-                    bool recentlyProcessedMessages = _lastSuccessfulProcessing.HasValue && 
+                    bool recentlyProcessedMessages = _lastSuccessfulProcessing.HasValue &&
                                                     _lastSuccessfulProcessing.Value > fiveMinutesAgo;
 
                     // Calculate failure rate
@@ -333,7 +333,7 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
             {
                 _successfulMessageCount++;
                 _lastSuccessfulProcessing = DateTime.UtcNow;
-                
+
                 // If connection and channel are healthy, mark as healthy
                 if (_connection?.IsOpen == true && _channel?.IsOpen == true)
                 {
@@ -351,11 +351,11 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
             lock (_healthLock)
             {
                 _failedMessageCount++;
-                
+
                 // Calculate failure rate to determine health status
                 double totalMessages = _successfulMessageCount + _failedMessageCount;
                 double failureRate = _failedMessageCount / totalMessages;
-                
+
                 if (failureRate > 0.2) // More than 20% failure rate
                 {
                     _healthStatus = HealthStatus.Unhealthy;
@@ -379,9 +379,8 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
         /// Thrown when neither queue configuration is properly set in derived classes.
         /// </exception>
         /// <remarks>
-        /// This constructor establishes the RabbitMQ connection synchronously during object construction
-        /// to ensure the consumer is ready when the background service starts. In production, consider
-        /// using the parameterized constructor with appropriate connection settings.
+        /// Connection creation is deferred until ExecuteAsync to ensure derived class constructors
+        /// have completed initialization before accessing virtual properties.
         /// </remarks>
         public RabbitMQBaseConsumer()
         {
@@ -390,10 +389,6 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
             _password = "guest";
 
             _logger.Info("[RabbitMQBaseConsumer] Initialized with default settings (localhost:guest)");
-
-            // Initialize connection synchronously during construction
-            // This ensures the consumer is ready when the background service starts
-            Task.Run(() => CreateConnectionAsync()).Wait();
         }
 
         /// <summary>
@@ -409,7 +404,8 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
         /// </exception>
         /// <remarks>
         /// Connection credentials should be obtained from secure configuration sources in production.
-        /// The connection is established synchronously during construction to validate configuration early.
+        /// Connection creation is deferred until ExecuteAsync to ensure derived class constructors
+        /// have completed initialization before accessing virtual properties.
         /// </remarks>
         public RabbitMQBaseConsumer(string hostName, string username, string password)
         {
@@ -418,9 +414,6 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
             _password = password ?? throw new ArgumentNullException(nameof(password));
 
             _logger.Info($"[RabbitMQBaseConsumer] Initialized with custom settings ({hostName}:{username})");
-
-            // Initialize connection synchronously during construction
-            Task.Run(() => CreateConnectionAsync()).Wait();
         }
 
         #endregion
@@ -466,7 +459,7 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
 
                 // Establish connection to RabbitMQ server
                 _connection = await factory.CreateConnectionAsync();
-                
+
                 // Create a dedicated channel for this consumer
                 _channel = await _connection.CreateChannelAsync();
 
@@ -573,7 +566,7 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
                 // Enhanced error logging with full context for troubleshooting
                 var errorMessage = $"Failed to create RabbitMQ connection and setup infrastructure: {ex.Message}";
                 _logger.Error($"[RabbitMQBaseConsumer] {errorMessage}", ex);
-                
+
                 // Re-throw to allow calling code to handle the failure appropriately
                 throw;
             }
@@ -622,8 +615,8 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
                 await _channel.QueueDeclareAsync(_deadLetterQueueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
                 // Bind DLQ to DLX with appropriate routing key
-                var dlqRoutingKey = !string.IsNullOrEmpty(originalExchangeName) 
-                    ? $"{Queue.Key}.failed" 
+                var dlqRoutingKey = !string.IsNullOrEmpty(originalExchangeName)
+                    ? $"{Queue.Key}.failed"
                     : $"{originalQueueName}.failed";
 
                 await _channel.QueueBindAsync(_deadLetterQueueName, _deadLetterExchangeName, dlqRoutingKey);
@@ -687,7 +680,7 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
                         // Calculate exponential backoff delay
                         var delay = RetryDelayMilliseconds * (int)Math.Pow(2, attempt - 1);
                         _logger.Debug($"[RabbitMQBaseConsumer] Retrying in {delay}ms...");
-                        
+
                         await Task.Delay(delay);
                     }
                 }
@@ -753,7 +746,7 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
             catch (Exception ex)
             {
                 _logger.Error($"[RabbitMQBaseConsumer] Failed to handle failed message - DeliveryTag: {deliveryTag}, Error: {ex.Message}", ex);
-                
+
                 // As last resort, reject the message to prevent infinite blocking
                 await _channel.BasicNackAsync(deliveryTag, multiple: false, requeue: false);
             }
@@ -787,6 +780,16 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
         /// </remarks>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            #region Connection Initialization
+
+            // Create RabbitMQ connection and channel infrastructure
+            // This is done here instead of constructor to ensure derived class constructors
+            // have completed and virtual properties are properly initialized
+            _logger.Info("[RabbitMQBaseConsumer] Starting RabbitMQ consumer execution...");
+            await CreateConnectionAsync();
+
+            #endregion
+
             #region Pre-execution Validation
 
             // Check if cancellation was requested before starting

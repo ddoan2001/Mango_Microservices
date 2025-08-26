@@ -56,7 +56,7 @@ namespace Mango.Services.EmailAPI.Messaging.RabbitMQ
         /// <summary>
         /// Gets the queue name for user registration messages.
         /// </summary>
-        protected override string? QueueName => 
+        protected override string? QueueName =>
             _configuration["TopicAndQueueNames:RegisterUserQueue"] ??
             throw new InvalidOperationException("Configuration 'TopicAndQueueNames:RegisterUserQueue' is required but not found");
 
@@ -68,7 +68,7 @@ namespace Mango.Services.EmailAPI.Messaging.RabbitMQ
         /// Enable Dead Letter Queue for failed registration email processing.
         /// Failed messages will be sent to DLQ after retry attempts are exhausted.
         /// </summary>
-        protected override bool EnableDeadLetterQueue => true;
+        protected override bool EnableDeadLetterQueue => false;
 
         /// <summary>
         /// Set maximum retry attempts for registration email processing.
@@ -136,7 +136,7 @@ namespace Mango.Services.EmailAPI.Messaging.RabbitMQ
             catch (Exception ex)
             {
                 _logger.Error($"[RabbitMQAuthConsumer] Error processing registration message: {ex.Message}", ex);
-                
+
                 // Re-throw to allow the base consumer to handle the error appropriately
                 // In production, you might want to implement dead letter queue handling here
                 throw;

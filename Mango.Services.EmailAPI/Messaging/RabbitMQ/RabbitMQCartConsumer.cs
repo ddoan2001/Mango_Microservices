@@ -57,7 +57,7 @@ namespace Mango.Services.EmailAPI.Messaging.RabbitMQ
         /// <summary>
         /// Gets the queue name for shopping cart email messages.
         /// </summary>
-        protected override string? QueueName => 
+        protected override string? QueueName =>
             _configuration["TopicAndQueueNames:EmailShoppingCartQueue"] ??
             throw new InvalidOperationException("Configuration 'TopicAndQueueNames:EmailShoppingCartQueue' is required but not found");
 
@@ -69,7 +69,7 @@ namespace Mango.Services.EmailAPI.Messaging.RabbitMQ
         /// Enable Dead Letter Queue for failed cart email processing.
         /// Failed messages will be sent to DLQ after retry attempts are exhausted.
         /// </summary>
-        protected override bool EnableDeadLetterQueue => true;
+        protected override bool EnableDeadLetterQueue => false;
 
         /// <summary>
         /// Set maximum retry attempts for cart email processing.
@@ -144,7 +144,7 @@ namespace Mango.Services.EmailAPI.Messaging.RabbitMQ
             catch (Exception ex)
             {
                 _logger.Error($"[RabbitMQCartConsumer] Error processing cart message: {ex.Message}", ex);
-                
+
                 // Re-throw to allow the base consumer to handle the error appropriately
                 // In production, you might want to implement dead letter queue handling here
                 throw;

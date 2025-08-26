@@ -57,7 +57,7 @@ namespace Mango.Services.RewardAPI.Messaging.RabbitMQ
         /// <summary>
         /// Gets the exchange name for payment events.
         /// </summary>
-        protected override string? ExchangeName => 
+        protected override string? ExchangeName =>
             _configuration["TopicAndQueueNames:PaymentCreatedTopic"] ??
             throw new InvalidOperationException("Configuration 'TopicAndQueueNames:PaymentCreatedTopic' is required but not found");
 
@@ -87,7 +87,7 @@ namespace Mango.Services.RewardAPI.Messaging.RabbitMQ
         /// Enable Dead Letter Queue for failed reward calculations.
         /// Reward processing failures should be preserved for manual review.
         /// </summary>
-        protected override bool EnableDeadLetterQueue => true;
+        protected override bool EnableDeadLetterQueue => false;
 
         /// <summary>
         /// Set maximum retry attempts for reward calculations.
@@ -168,7 +168,7 @@ namespace Mango.Services.RewardAPI.Messaging.RabbitMQ
             catch (Exception ex)
             {
                 _logger.Error($"[RabbitMQRewardConsumer] Error processing payment message for reward calculation: {ex.Message}", ex);
-                
+
                 // Re-throw to allow the base consumer to handle the error appropriately
                 // In production, you might want to implement dead letter queue handling here
                 throw;

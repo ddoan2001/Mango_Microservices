@@ -57,7 +57,7 @@ namespace Mango.Services.OrderAPI.Messaging.RabbitMQ
         /// <summary>
         /// Gets the exchange name for payment events.
         /// </summary>
-        protected override string? ExchangeName => 
+        protected override string? ExchangeName =>
             _configuration["TopicAndQueueNames:PaymentCreatedTopic"] ??
             throw new InvalidOperationException("Configuration 'TopicAndQueueNames:PaymentCreatedTopic' is required but not found");
 
@@ -87,7 +87,7 @@ namespace Mango.Services.OrderAPI.Messaging.RabbitMQ
         /// Enable Dead Letter Queue for failed order status updates.
         /// Order updates are critical for business operations, so DLQ is essential.
         /// </summary>
-        protected override bool EnableDeadLetterQueue => true;
+        protected override bool EnableDeadLetterQueue => false;
 
         /// <summary>
         /// Set maximum retry attempts for order status updates.
@@ -162,7 +162,7 @@ namespace Mango.Services.OrderAPI.Messaging.RabbitMQ
             catch (Exception ex)
             {
                 _logger.Error($"[RabbitMQOrderConsumer] Error processing payment message for order update: {ex.Message}", ex);
-                
+
                 // Re-throw to allow the base consumer to handle the error appropriately
                 // In production, you might want to implement dead letter queue handling here
                 throw;
