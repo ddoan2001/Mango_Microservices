@@ -1,6 +1,9 @@
 using AutoMapper;
 using log4net;
 using log4net.Config;
+using Mango.Cache;
+using Mango.Cache.Interface;
+using Mango.Common.Configuration.AppSetting;
 using Mango.Services.ProductAPI;
 using Mango.Services.ProductAPI.Data;
 using Mango.Services.ProductAPI.Extensions;
@@ -36,6 +39,15 @@ builder.Services.AddControllers();
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IProductService, ProductService>();
+
+// Configure cache settings from appsettings.json
+builder.Services.Configure<CacheSettings>(
+    builder.Configuration.GetSection(CacheSettings.SectionName));
+
+// Register cache services with proper lifetimes
+builder.Services.AddSingleton<ICacheFactory, CacheFactory>();
+builder.Services.AddTransient<ICacheManager, MemoryCacheManager>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {

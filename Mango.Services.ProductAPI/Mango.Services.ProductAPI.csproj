@@ -24,4 +24,8 @@
   <ItemGroup>
     <Folder Include="wwwroot\ProductImages\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mango.Cache\Mango.Cache.csproj" />
+  </ItemGroup>
 </Project>

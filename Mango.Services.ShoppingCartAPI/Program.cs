@@ -1,6 +1,9 @@
 using AutoMapper;
 using log4net;
 using log4net.Config;
+using Mango.Cache;
+using Mango.Cache.Interface;
+using Mango.Common.Configuration.AppSetting;
 using Mango.Message.RabbitMQ.Sender;
 using Mango.Message.RabbitMQ.Sender.Interface;
 using Mango.Services.ShoppingCartAPI;
@@ -42,6 +45,14 @@ builder.Services.AddHttpClient("Product", u => u.BaseAddress =
 new Uri(builder.Configuration["ServiceUrls:ProductAPI"])).AddHttpMessageHandler<BackendApiAuthenticationHttpClientHandler>();
 builder.Services.AddHttpClient("Coupon", u => u.BaseAddress =
 new Uri(builder.Configuration["ServiceUrls:CouponAPI"])).AddHttpMessageHandler<BackendApiAuthenticationHttpClientHandler>();
+
+// Configure cache settings from appsettings.json
+builder.Services.Configure<CacheSettings>(
+    builder.Configuration.GetSection(CacheSettings.SectionName));
+
+// Register cache services with proper lifetimes
+builder.Services.AddSingleton<ICacheFactory, CacheFactory>();
+builder.Services.AddTransient<ICacheManager, MemoryCacheManager>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
