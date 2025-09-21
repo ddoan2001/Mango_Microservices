@@ -51,7 +51,7 @@ builder.Services.Configure<CacheSettings>(
     builder.Configuration.GetSection(CacheSettings.SectionName));
 
 // Register cache services with proper lifetimes
-builder.Services.AddSingleton<ICacheFactory, CacheFactory>();
+//builder.Services.AddSingleton<ICacheFactory, CacheFactory>();
 builder.Services.AddTransient<ICacheManager, MemoryCacheManager>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 

@@ -1,4 +1,5 @@
-﻿using Mango.Cache.Interface;
+﻿using log4net;
+using Mango.Cache.Interface;
 using Mango.Common.Configuration.AppSetting;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -10,12 +11,16 @@ namespace Mango.Cache
     {
         private readonly IDistributedCache _cache;
         private readonly CacheSettings _cacheSettings;
+        private static readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        private bool _isRedisAvailable = true;
 
         public RedisCacheService(IOptions<CacheSettings> cacheOptions, IDistributedCache cache)
         {
             _cacheSettings = cacheOptions.Value;
             _cache = cache;
         }
+
         private TimeSpan Expiration
         {
             get
@@ -32,22 +37,56 @@ namespace Mango.Cache
 
         public T? GetData<T>(string key)
         {
-            var data = _cache.GetString(key);
-
-            if (data is null)
+            if (!_isRedisAvailable)
+            {
                 return default(T);
+            }
 
-            return JsonSerializer.Deserialize<T>(data);
+            try
+            {
+                var data = _cache.GetString(key);
+
+                if (data is null)
+                    return default(T);
+
+                return JsonSerializer.Deserialize<T>(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to get data from Redis cache for key: {key}", ex);
+                _isRedisAvailable = false;
+
+                // Schedule a retry after some time
+                _ = Task.Delay(TimeSpan.FromMinutes(1)).ContinueWith(_ => _isRedisAvailable = true);
+
+                return default(T);
+            }
         }
 
         public void SetData<T>(string key, T data)
         {
-            var options = new DistributedCacheEntryOptions()
+            if (!_isRedisAvailable)
             {
-                AbsoluteExpirationRelativeToNow = Expiration
-            };
+                return;
+            }
 
-            _cache.SetString(key, JsonSerializer.Serialize(data), options);
+            try
+            {
+                var options = new DistributedCacheEntryOptions()
+                {
+                    AbsoluteExpirationRelativeToNow = Expiration
+                };
+
+                _cache.SetString(key, JsonSerializer.Serialize(data), options);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to set data to Redis cache for key: {key}", ex);
+                _isRedisAvailable = false;
+
+                // Schedule a retry after some time
+                _ = Task.Delay(TimeSpan.FromMinutes(1)).ContinueWith(_ => _isRedisAvailable = true);
+            }
         }
     }
 }
