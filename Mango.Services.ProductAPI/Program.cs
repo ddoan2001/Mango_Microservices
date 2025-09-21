@@ -34,7 +34,6 @@ builder.Services.AddDbContext<AppDbContext>(option =>
 builder.Services.AddStackExchangeRedisCache(option =>
 {
     option.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-    option.InstanceName = "RedisCache_Manager_Products_";
 });
 
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
@@ -51,9 +50,8 @@ builder.Services.Configure<CacheSettings>(
     builder.Configuration.GetSection(CacheSettings.SectionName));
 
 // Register cache services with proper lifetimes
-//builder.Services.AddSingleton<ICacheFactory, CacheFactory>();
-builder.Services.AddTransient<ICacheManager, MemoryCacheManager>();
-builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddSingleton<ICacheFactory, CacheFactory>();
+builder.Services.AddTransient<ICacheManager, RedisCacheManager>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>

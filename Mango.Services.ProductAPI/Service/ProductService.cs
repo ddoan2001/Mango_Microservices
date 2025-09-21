@@ -17,16 +17,16 @@ namespace Mango.Services.ProductAPI.Service
         private readonly IMapper _mapper;
         private readonly AppDbContext _db;
         private readonly IHttpContextAccessor _httpContextAccessor; // Add IHttpContextAccessor for accessing HttpContext
-        private readonly IRedisCacheService _redisCache;
-        //private const string Cache_Manager_Products = "Cache_Manager_Products";
+        private readonly ICacheFactory _cacheFactory;
+        private const string Cache_Manager_Products = "Cache_Manager_Products";
         private const string Cache_Key_Global_Products = "Cache_Key_Global_Products";
 
-        public ProductService(IMapper mapper, AppDbContext db, IHttpContextAccessor httpContextAccessor, IRedisCacheService redisCache)
+        public ProductService(IMapper mapper, AppDbContext db, IHttpContextAccessor httpContextAccessor, ICacheFactory cacheFactory)
         {
             _mapper = mapper;
             _db = db;
             _httpContextAccessor = httpContextAccessor; // Initialize IHttpContextAccessor
-            _redisCache = redisCache;
+            _cacheFactory = cacheFactory;
         }
 
         /// <summary>
@@ -182,6 +182,8 @@ namespace Mango.Services.ProductAPI.Service
 
         public async Task<IEnumerable<ProductDto>> GetProducts(ProductParams productParams)
         {
+            // Get cache manager
+            var cacheManager = _cacheFactory.GetCacheManager(Cache_Manager_Products);
 
             // Create unique cache key based on parameters - handle Brands as string
             string key = $"{Cache_Key_Global_Products}_{productParams.PageNumber}_{productParams.PageSize}_{productParams.OrderBy}" +
@@ -190,15 +192,16 @@ namespace Mango.Services.ProductAPI.Service
             // Use IHttpContextAccessor to add pagination headers
             var httpContext = _httpContextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContext is not available.");
 
-            // Get cache manager
-            var cacheManager = _redisCache.GetData<CachedProductResult>(key);
-
-            if (cacheManager is not null)
+            if (cacheManager.Contains(key))
             {
-                httpContext.Response.AddPaginationHeaders(cacheManager.Metadata);
-                return cacheManager.Products;
-            }
+                var cachedResult = cacheManager.GetData<CachedProductResult>(key);
 
+                if (cachedResult is not null && cachedResult.Metadata is not null)
+                {
+                    httpContext.Response.AddPaginationHeaders(cachedResult.Metadata);
+                    return cachedResult.Products;
+                }
+            }
 
             var query = _db.Products
             .Sort(productParams.OrderBy)
@@ -222,7 +225,7 @@ namespace Mango.Services.ProductAPI.Service
                 Metadata = products.Metadata
             };
 
-            _redisCache.SetData(key, cachedProductResult);
+            cacheManager.AddOrUpdate(key, cachedProductResult);
 
             return productDtos;
         }

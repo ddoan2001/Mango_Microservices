@@ -3,11 +3,12 @@ using Mango.Cache.Interface;
 using Mango.Common.Configuration.AppSetting;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
+using System.Runtime.Caching;
 using System.Text.Json;
 
 namespace Mango.Cache
 {
-    public class RedisCacheService : IRedisCacheService
+    public class RedisCacheManager : ICacheManager
     {
         private readonly IDistributedCache _cache;
         private readonly CacheSettings _cacheSettings;
@@ -15,7 +16,7 @@ namespace Mango.Cache
 
         private bool _isRedisAvailable = true;
 
-        public RedisCacheService(IOptions<CacheSettings> cacheOptions, IDistributedCache cache)
+        public RedisCacheManager(IOptions<CacheSettings> cacheOptions, IDistributedCache cache)
         {
             _cacheSettings = cacheOptions.Value;
             _cache = cache;
@@ -39,7 +40,7 @@ namespace Mango.Cache
         {
             if (!_isRedisAvailable)
             {
-                return default(T);
+                return default;
             }
 
             try
@@ -63,7 +64,12 @@ namespace Mango.Cache
             }
         }
 
-        public void SetData<T>(string key, T data)
+        public void AddOrUpdate<T>(string key, T value)
+        {
+            AddOrUpdate(key, value, Expiration, null!);
+        }
+
+        public void AddOrUpdate<T>(string key, T value, TimeSpan expires, CacheEntryRemovedCallback CacheEntryEvictedCallback)
         {
             if (!_isRedisAvailable)
             {
@@ -74,10 +80,10 @@ namespace Mango.Cache
             {
                 var options = new DistributedCacheEntryOptions()
                 {
-                    AbsoluteExpirationRelativeToNow = Expiration
+                    AbsoluteExpirationRelativeToNow = expires
                 };
 
-                _cache.SetString(key, JsonSerializer.Serialize(data), options);
+                _cache.SetString(key, JsonSerializer.Serialize(value), options);
             }
             catch (Exception ex)
             {
@@ -87,6 +93,62 @@ namespace Mango.Cache
                 // Schedule a retry after some time
                 _ = Task.Delay(TimeSpan.FromMinutes(1)).ContinueWith(_ => _isRedisAvailable = true);
             }
+        }
+
+        public void AddOrUpdate<T>(string key, T value, CacheEntryRemovedCallback CacheEntryEvictedCallback)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TouchKey(string key)
+        {
+            var obj = _cache.Get(key);
+            obj = null;
+            return true;
+        }
+
+        public void AddOrUpdatePermanently<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveData(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(string key)
+        {
+            try
+            {
+                var data = _cache.Get(key);
+                return data != null;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to check if key exists in Redis cache: {key}", ex);
+                return false;
+            }
+        }
+
+        public void ClearCache()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ClearCacheByKeyword(string keyword)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<KeyValuePair<string, T>> GetCaches<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }
