@@ -114,7 +114,18 @@ namespace Mango.Cache
 
         public void RemoveData(string key)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var data = _cache.Get(key);
+                if (data != null)
+                {
+                    _cache.Remove(key);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to remove data from Redis cache for key: {key}", ex);
+            }
         }
 
         public bool Contains(string key)
