@@ -20,9 +20,9 @@ namespace Mango.Cache
             get
             {
                 int expirationTime = _cacheSettings.Memory.Expiration;
-                
+
                 // Ensure minimum expiration time of 30 seconds
-                if (expirationTime <= 0) 
+                if (expirationTime <= 0)
                     expirationTime = 300; // 5 minutes default
 
                 return TimeSpan.FromSeconds(expirationTime);

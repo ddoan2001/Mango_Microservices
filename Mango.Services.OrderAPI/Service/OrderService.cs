@@ -48,10 +48,7 @@ namespace Mango.Services.OrderAPI.Service
                 .Include(o => o.OrderDetails)
                 .FirstAsync(predicate);
 
-            // 3. Map to DTO
-            //var orderHeaderDto = _mapper.Map<OrderHeaderDto>(orderHeader);
-
-            // 4. Attach ProductDto to each OrderDetailsDto
+            // 3. Attach ProductDto to each OrderDetailsDto
             foreach (var detail in orderHeader.OrderDetails)
             {
                 detail.Product = productList.FirstOrDefault(p => p.ProductId == detail.ProductId);
