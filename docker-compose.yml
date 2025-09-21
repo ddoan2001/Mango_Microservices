@@ -1,6 +1,6 @@
 services:
   redis:
     image: "redis:latest"
-    container_name: "my_redis"
+    container_name: "redis_memory"
     ports:
       - "6379:6379"
