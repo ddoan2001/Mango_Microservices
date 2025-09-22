@@ -1,7 +1,9 @@
 ﻿using log4net;
 using Mango.Message.RabbitMQ.Consumer.Base;
+using Mango.Message.RabbitMQ.Models;
 using Mango.Services.EmailAPI.Models.Dto.Cart;
 using Mango.Services.EmailAPI.Service.IService;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Mango.Services.EmailAPI.Messaging.RabbitMQ
@@ -42,7 +44,8 @@ namespace Mango.Services.EmailAPI.Messaging.RabbitMQ
         /// <exception cref="InvalidOperationException">Thrown when queue configuration is missing</exception>
         public RabbitMQCartConsumer(
             IConfiguration configuration,
-            IServiceScopeFactory scopeFactory)
+            IServiceScopeFactory scopeFactory,
+            IOptions<RabbitMQConnectionOptions> rabbitMQOptions) : base(rabbitMQOptions.Value)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));

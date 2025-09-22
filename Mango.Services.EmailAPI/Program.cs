@@ -1,5 +1,6 @@
 using log4net;
 using log4net.Config;
+using Mango.Message.RabbitMQ.Models;
 using Mango.Services.EmailAPI.Data;
 using Mango.Services.EmailAPI.Messaging.RabbitMQ;
 using Mango.Services.EmailAPI.Service;
@@ -19,6 +20,9 @@ builder.Services.AddDbContext<AppDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+// Configure RabbitMQ connection options
+builder.Services.Configure<RabbitMQConnectionOptions>(builder.Configuration.GetSection(RabbitMQConnectionOptions.SectionName));
 
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddHostedService<RabbitMQAuthConsumer>();

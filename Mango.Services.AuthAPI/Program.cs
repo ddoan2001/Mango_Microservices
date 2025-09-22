@@ -1,5 +1,6 @@
 using log4net;
 using log4net.Config;
+using Mango.Message.RabbitMQ.Models;
 using Mango.Message.RabbitMQ.Sender;
 using Mango.Message.RabbitMQ.Sender.Interface;
 using Mango.Services.AuthAPI.Data;
@@ -24,13 +25,18 @@ builder.Services.AddDbContext<AppDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSettings:JwtOptions"));
+builder.Services.Configure<RabbitMQConnectionOptions>(builder.Configuration.GetSection(RabbitMQConnectionOptions.SectionName));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IRabbitMQSender, RabbitMQSender>();
+builder.Services.AddScoped<IRabbitMQSender>(provider =>
+{
+    var rabbitMQOptions = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RabbitMQConnectionOptions>>().Value;
+    return new RabbitMQSender(rabbitMQOptions);
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
