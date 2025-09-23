@@ -4,6 +4,7 @@ using log4net.Config;
 using Mango.Cache;
 using Mango.Cache.Interface;
 using Mango.Common.Configuration.AppSetting;
+using Mango.Message.RabbitMQ.Models;
 using Mango.Message.RabbitMQ.Sender;
 using Mango.Message.RabbitMQ.Sender.Interface;
 using Mango.Services.ShoppingCartAPI;
@@ -39,7 +40,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<BackendApiAuthenticationHttpClientHandler>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
-builder.Services.AddScoped<IRabbitMQSender, RabbitMQSender>();
+
+// Configure RabbitMQ connection options
+builder.Services.Configure<RabbitMQConnectionOptions>(builder.Configuration.GetSection(RabbitMQConnectionOptions.SectionName));
+builder.Services.AddScoped<IRabbitMQSender>(provider =>
+{
+    var rabbitMQOptions = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RabbitMQConnectionOptions>>().Value;
+    return new RabbitMQSender(rabbitMQOptions);
+});
 
 builder.Services.AddHttpClient("Product", u => u.BaseAddress =
 new Uri(builder.Configuration["ServiceUrls:ProductAPI"])).AddHttpMessageHandler<BackendApiAuthenticationHttpClientHandler>();

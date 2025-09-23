@@ -4,6 +4,22 @@
 > For BE
 
 ```bash
+-- Running docker CLI
+# 1. Start all containers
+docker-compose -f docker-compose-dev.yml up -d
+
+# 2. Wait for SQL Server to be ready (optional test)
+docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${DB_PASSWORD}' -Q "SELECT @@VERSION" -C
+
+# 3. Initialize databases (THIS IS THE MANUAL STEP)
+docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${DB_PASSWORD}' -i /scripts/01-create-databases.sql -C
+
+# 4. Verify databases were created
+docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${DB_PASSWORD}' -Q "SELECT name FROM sys.databases WHERE name LIKE 'Mango_%'" -C
+
+```
+
+```bash
 -cd API:
 nuget:
 	<PackageReference Include="AutoMapper" Version="14.0.0" />

@@ -1,6 +1,7 @@
 using AutoMapper;
 using log4net;
 using log4net.Config;
+using Mango.Message.RabbitMQ.Models;
 using Mango.Services.OrderAPI;
 using Mango.Services.OrderAPI.Data;
 using Mango.Services.OrderAPI.Extensions;
@@ -27,6 +28,9 @@ builder.Services.AddDbContext<AppDbContext>(option =>
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// Configure RabbitMQ connection options
+builder.Services.Configure<RabbitMQConnectionOptions>(builder.Configuration.GetSection(RabbitMQConnectionOptions.SectionName));
 
 // Add services to the container.
 

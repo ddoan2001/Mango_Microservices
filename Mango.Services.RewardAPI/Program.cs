@@ -1,5 +1,6 @@
 using log4net;
 using log4net.Config;
+using Mango.Message.RabbitMQ.Models;
 using Mango.Services.RewardAPI.Data;
 using Mango.Services.RewardAPI.Messaging.RabbitMQ;
 using Mango.Services.RewardAPI.Service;
@@ -18,6 +19,9 @@ builder.Services.AddDbContext<AppDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+// Configure RabbitMQ connection options
+builder.Services.Configure<RabbitMQConnectionOptions>(builder.Configuration.GetSection(RabbitMQConnectionOptions.SectionName));
 
 // Add services to the container.
 

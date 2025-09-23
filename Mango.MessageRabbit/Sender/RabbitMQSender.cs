@@ -1,4 +1,5 @@
 ﻿using log4net;
+using Mango.Message.RabbitMQ.Models;
 using Mango.Message.RabbitMQ.Sender.Interface;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -20,6 +21,11 @@ namespace Mango.Message.RabbitMQ.Sender
         private readonly string _hostName;
 
         /// <summary>
+        /// RabbitMQ server port
+        /// </summary>
+        private readonly int _port;
+
+        /// <summary>
         /// RabbitMQ username for authentication
         /// </summary>
         private readonly string _username;
@@ -28,6 +34,26 @@ namespace Mango.Message.RabbitMQ.Sender
         /// RabbitMQ password for authentication
         /// </summary>
         private readonly string _password;
+
+        /// <summary>
+        /// Virtual host for RabbitMQ connection
+        /// </summary>
+        private readonly string _virtualHost;
+
+        /// <summary>
+        /// Whether to use SSL/TLS for the connection
+        /// </summary>
+        private readonly bool _useSsl;
+
+        /// <summary>
+        /// Connection timeout in milliseconds
+        /// </summary>
+        private readonly int _connectionTimeoutMs;
+
+        /// <summary>
+        /// Heartbeat interval in seconds
+        /// </summary>
+        private readonly ushort _heartbeatInterval;
 
         /// <summary>
         /// RabbitMQ connection instance
@@ -60,26 +86,38 @@ namespace Mango.Message.RabbitMQ.Sender
         public RabbitMQSender()
         {
             _hostName = "localhost";
+            _port = 5672;
             _username = "guest";
             _password = "guest";
+            _virtualHost = "/";
+            _useSsl = false;
+            _connectionTimeoutMs = 30000;
+            _heartbeatInterval = 60;
 
             _logger.Info("[RabbitMQSender] Initialized with default settings (localhost:guest)");
         }
 
         /// <summary>
-        /// Initializes a new instance of RabbitMQSender with custom connection settings.
+        /// Initializes a new instance of RabbitMQSender with configuration options.
+        /// Recommended for production environments where configuration is managed via appsettings.json.
         /// </summary>
-        /// <param name="hostName">RabbitMQ server hostname</param>
-        /// <param name="username">Username for authentication</param>
-        /// <param name="password">Password for authentication</param>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null</exception>
-        public RabbitMQSender(string hostName, string username, string password)
+        /// <param name="connectionOptions">RabbitMQ connection configuration options</param>
+        /// <exception cref="ArgumentNullException">Thrown when connectionOptions is null</exception>
+        public RabbitMQSender(RabbitMQConnectionOptions connectionOptions)
         {
-            _hostName = hostName ?? throw new ArgumentNullException(nameof(hostName));
-            _username = username ?? throw new ArgumentNullException(nameof(username));
-            _password = password ?? throw new ArgumentNullException(nameof(password));
+            if (connectionOptions == null)
+                throw new ArgumentNullException(nameof(connectionOptions));
 
-            _logger.Info($"[RabbitMQSender] Initialized with custom settings ({hostName}:{username})");
+            _hostName = connectionOptions.HostName;
+            _port = connectionOptions.Port;
+            _username = connectionOptions.Username;
+            _password = connectionOptions.Password;
+            _virtualHost = connectionOptions.VirtualHost;
+            _useSsl = connectionOptions.UseSsl;
+            _connectionTimeoutMs = connectionOptions.ConnectionTimeoutMs;
+            _heartbeatInterval = connectionOptions.HeartbeatInterval;
+
+            _logger.Info($"[RabbitMQSender] Initialized with configuration options ({connectionOptions.HostName}:{connectionOptions.Username})");
         }
 
         #endregion
@@ -246,12 +284,22 @@ namespace Mango.Message.RabbitMQ.Sender
                 var factory = new ConnectionFactory
                 {
                     HostName = _hostName,
+                    Port = _port,
                     UserName = _username,
                     Password = _password,
+                    VirtualHost = _virtualHost,
                     AutomaticRecoveryEnabled = true,        // Enable automatic recovery
                     NetworkRecoveryInterval = TimeSpan.FromSeconds(10), // Recovery interval
-                    RequestedHeartbeat = TimeSpan.FromSeconds(60)       // Heartbeat interval
+                    RequestedHeartbeat = TimeSpan.FromSeconds(_heartbeatInterval),
+                    RequestedConnectionTimeout = TimeSpan.FromMilliseconds(_connectionTimeoutMs)
                 };
+
+                // Configure SSL if enabled
+                if (_useSsl)
+                {
+                    factory.Ssl.Enabled = true;
+                    factory.Ssl.ServerName = _hostName;
+                }
 
                 _connection = await factory.CreateConnectionAsync();
                 _logger.Info($"[RabbitMQSender] Connection established to {_hostName}");

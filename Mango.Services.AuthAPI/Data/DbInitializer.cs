@@ -44,7 +44,8 @@ namespace Mango.Services.AuthAPI.Data
                 {
                     UserName = "danhdc2001@gmail.com",
                     Email = "danhdc2001@gmail.com",
-                    Name = "danhdc2001"
+                    Name = "danhdc2001",
+                    PhoneNumber = "077123123"
                 };
 
                 await userManager.CreateAsync(user, "A@123456a");
@@ -54,7 +55,8 @@ namespace Mango.Services.AuthAPI.Data
                 {
                     UserName = "admin@gmail.com",
                     Email = "admin@gmail.com",
-                    Name = "admin"
+                    Name = "admin",
+                    PhoneNumber = "079456789"
                 };
 
                 await userManager.CreateAsync(admin, "A@123456a");

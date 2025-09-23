@@ -20,9 +20,9 @@ namespace Mango.Cache
             get
             {
                 int expirationTime = _cacheSettings.Memory.Expiration;
-                
+
                 // Ensure minimum expiration time of 30 seconds
-                if (expirationTime <= 0) 
+                if (expirationTime <= 0)
                     expirationTime = 300; // 5 minutes default
 
                 return TimeSpan.FromSeconds(expirationTime);
@@ -30,12 +30,12 @@ namespace Mango.Cache
         }
 
 
-        public void AddOrUpdate(string key, object value)
+        public void AddOrUpdate<T>(string key, T value)
         {
             AddOrUpdate(key, value, Expiration, null!);
         }
 
-        public void AddOrUpdate(string key, object value, TimeSpan expires, CacheEntryRemovedCallback CacheEntryEvictedCallback)
+        public void AddOrUpdate<T>(string key, T value, TimeSpan expires, CacheEntryRemovedCallback CacheEntryEvictedCallback)
         {
             var policy = new CacheItemPolicy
             {
@@ -51,7 +51,7 @@ namespace Mango.Cache
         /// <param name="key">cache key</param>
         /// <param name="value">cache object</param>
         /// <param name="CacheEntryEvictedCallback">delegate callback action when a cache entry is evicted</param>
-        public void AddOrUpdate(string key, object value, CacheEntryRemovedCallback CacheEntryEvictedCallback)
+        public void AddOrUpdate<T>(string key, T value, CacheEntryRemovedCallback CacheEntryEvictedCallback)
         {
             var policy = new CacheItemPolicy
             {
@@ -77,7 +77,7 @@ namespace Mango.Cache
         /// </summary>
         /// <param name="key">cache key</param>
         /// <param name="value">cache object</param>
-        public void AddOrUpdatePermanently(string key, object value)
+        public void AddOrUpdatePermanently<T>(string key, T value)
         {
             var policy = new CacheItemPolicy
             {
@@ -94,9 +94,9 @@ namespace Mango.Cache
             _cache.Trim(100);
         }
 
-        public object GetData(string key)
+        public T? GetData<T>(string key)
         {
-            return _cache.Get(key);
+            return (T?)_cache.Get(key);
         }
 
         public void RemoveData(string key)

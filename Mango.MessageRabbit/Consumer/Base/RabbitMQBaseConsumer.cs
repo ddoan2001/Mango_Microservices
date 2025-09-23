@@ -23,6 +23,11 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
         private readonly string _hostName;
 
         /// <summary>
+        /// RabbitMQ server port. Default is 5672 for standard AMQP connections.
+        /// </summary>
+        private readonly int _port;
+
+        /// <summary>
         /// RabbitMQ username for authentication. Default is "guest" for local development.
         /// </summary>
         private readonly string _username;
@@ -31,6 +36,26 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
         /// RabbitMQ password for authentication. Should be secure in production environments.
         /// </summary>
         private readonly string _password;
+
+        /// <summary>
+        /// Virtual host for RabbitMQ connection. Default is "/" (root virtual host).
+        /// </summary>
+        private readonly string _virtualHost;
+
+        /// <summary>
+        /// Whether to use SSL/TLS for the connection. Default is false for development.
+        /// </summary>
+        private readonly bool _useSsl;
+
+        /// <summary>
+        /// Connection timeout in milliseconds. Default is 30000 (30 seconds).
+        /// </summary>
+        private readonly int _connectionTimeoutMs;
+
+        /// <summary>
+        /// Heartbeat interval in seconds. Default is 60 seconds.
+        /// </summary>
+        private readonly ushort _heartbeatInterval;
 
         #endregion
 
@@ -385,35 +410,43 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
         public RabbitMQBaseConsumer()
         {
             _hostName = "localhost";
+            _port = 5672;
             _username = "guest";
             _password = "guest";
+            _virtualHost = "/";
+            _useSsl = false;
+            _connectionTimeoutMs = 30000;
+            _heartbeatInterval = 60;
 
             _logger.Info("[RabbitMQBaseConsumer] Initialized with default settings (localhost:guest)");
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="RabbitMQBaseConsumer"/> with custom connection settings.
-        /// Recommended for production environments where specific connection parameters are required.
+        /// Initializes a new instance of <see cref="RabbitMQBaseConsumer"/> with configuration options.
+        /// Recommended for production environments where configuration is managed via appsettings.json or similar.
         /// </summary>
-        /// <param name="hostName">RabbitMQ server hostname or IP address (e.g., "rabbit.company.com")</param>
-        /// <param name="username">Username for authentication. Should have appropriate permissions for queue operations</param>
-        /// <param name="password">Password for authentication. Should be stored securely (e.g., in configuration or secrets)</param>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null or empty</exception>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when connection cannot be established or queue configuration is invalid
-        /// </exception>
+        /// <param name="connectionOptions">RabbitMQ connection configuration options</param>
+        /// <exception cref="ArgumentNullException">Thrown when connectionOptions is null</exception>
         /// <remarks>
-        /// Connection credentials should be obtained from secure configuration sources in production.
-        /// Connection creation is deferred until ExecuteAsync to ensure derived class constructors
-        /// have completed initialization before accessing virtual properties.
+        /// This constructor allows for dependency injection of configuration options from appsettings.json
+        /// or other configuration sources. Connection creation is deferred until ExecuteAsync to ensure
+        /// derived class constructors have completed initialization before accessing virtual properties.
         /// </remarks>
-        public RabbitMQBaseConsumer(string hostName, string username, string password)
+        public RabbitMQBaseConsumer(RabbitMQConnectionOptions connectionOptions)
         {
-            _hostName = hostName ?? throw new ArgumentNullException(nameof(hostName));
-            _username = username ?? throw new ArgumentNullException(nameof(username));
-            _password = password ?? throw new ArgumentNullException(nameof(password));
+            if (connectionOptions == null)
+                throw new ArgumentNullException(nameof(connectionOptions));
 
-            _logger.Info($"[RabbitMQBaseConsumer] Initialized with custom settings ({hostName}:{username})");
+            _hostName = connectionOptions.HostName;
+            _port = connectionOptions.Port;
+            _username = connectionOptions.Username;
+            _password = connectionOptions.Password;
+            _virtualHost = connectionOptions.VirtualHost;
+            _useSsl = connectionOptions.UseSsl;
+            _connectionTimeoutMs = connectionOptions.ConnectionTimeoutMs;
+            _heartbeatInterval = connectionOptions.HeartbeatInterval;
+
+            _logger.Info($"[RabbitMQBaseConsumer] Initialized with configuration options ({connectionOptions.HostName}:{connectionOptions.Username})");
         }
 
         #endregion
@@ -445,13 +478,24 @@ namespace Mango.Message.RabbitMQ.Consumer.Base
 
                 #region Connection Factory Configuration
 
-                // Create connection factory with provided credentials
+                // Create connection factory with provided credentials and configuration
                 var factory = new ConnectionFactory
                 {
                     HostName = _hostName,
+                    Port = _port,
                     UserName = _username,
-                    Password = _password
+                    Password = _password,
+                    VirtualHost = _virtualHost,
+                    RequestedConnectionTimeout = TimeSpan.FromMilliseconds(_connectionTimeoutMs),
+                    RequestedHeartbeat = TimeSpan.FromSeconds(_heartbeatInterval)
                 };
+
+                // Configure SSL if enabled
+                if (_useSsl)
+                {
+                    factory.Ssl.Enabled = true;
+                    factory.Ssl.ServerName = _hostName;
+                }
 
                 #endregion
 

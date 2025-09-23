@@ -86,7 +86,7 @@ namespace Mango.Services.ShoppingCartAPI.Service
 
             if (cacheManager.Contains(key))
             {
-                return (CartHeaderDto)cacheManager.GetData(key);
+                return cacheManager.GetData<CartHeaderDto>(key);
             }
 
             var cart = _mapper.Map<CartHeaderDto>(await RetrieveCartByUserId(userId));

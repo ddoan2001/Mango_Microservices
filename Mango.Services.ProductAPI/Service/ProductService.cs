@@ -194,10 +194,13 @@ namespace Mango.Services.ProductAPI.Service
 
             if (cacheManager.Contains(key))
             {
-                var cachedResult = (CachedProductResult)cacheManager.GetData(key);
-                // Add pagination headers from cached metadata
-                httpContext.Response.AddPaginationHeaders(cachedResult.Metadata);
-                return cachedResult.Products;
+                var cachedResult = cacheManager.GetData<CachedProductResult>(key);
+
+                if (cachedResult is not null && cachedResult.Metadata is not null)
+                {
+                    httpContext.Response.AddPaginationHeaders(cachedResult.Metadata);
+                    return cachedResult.Products;
+                }
             }
 
             var query = _db.Products
@@ -221,6 +224,7 @@ namespace Mango.Services.ProductAPI.Service
                 Products = productDtos,
                 Metadata = products.Metadata
             };
+
             cacheManager.AddOrUpdate(key, cachedProductResult);
 
             return productDtos;
