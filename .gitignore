@@ -417,3 +417,4 @@ Mango.Services.ProductAPI/wwwroot/ProductImages/
 /Mango.GatewaySolution/appsettings.json
 
 .env
+docker-compose.yml

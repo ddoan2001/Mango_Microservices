@@ -11,7 +11,7 @@ services:
     container_name: "mango_sqlserver"
     hostname: ${DB_HOST}
     ports:
-      - "${DB_POSTGRES_PORT}:1433"
+      - "${DB_PORT}:1433"
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: ${DB_PASSWORD}
@@ -19,8 +19,9 @@ services:
     volumes:
       - sqlserver_data:/var/opt/mssql
       - ./init-db:/docker-entrypoint-initdb.d
+    entrypoint: ["/docker-entrypoint-initdb.d/init-sqlserver.sh"]
     restart: unless-stopped
-    
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: "rabbitmq_queue"
@@ -36,7 +37,7 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq/
       - rabbitmq_log:/var/log/rabbitmq/
     restart: unless-stopped
-        
+
   adminer:
     image: adminer:latest
     container_name: "mango_adminer"
@@ -49,7 +50,7 @@ services:
     depends_on:
       - sqlserver
     restart: unless-stopped
-    
+
 volumes:
   sqlserver_data:
   rabbitmq_data:
