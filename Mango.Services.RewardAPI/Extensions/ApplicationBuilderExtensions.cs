@@ -1,4 +1,4 @@
-﻿using Mango.Services.RewardAPI.Messaging;
+﻿using Mango.Services.RewardAPI.Messaging.Azure;
 
 namespace Mango.Services.RewardAPI.Extension
 {

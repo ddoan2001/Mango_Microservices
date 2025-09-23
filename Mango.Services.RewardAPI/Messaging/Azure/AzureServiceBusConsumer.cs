@@ -5,7 +5,7 @@ using Mango.Services.RewardAPI.Service.IService;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace Mango.Services.RewardAPI.Messaging
+namespace Mango.Services.RewardAPI.Messaging.Azure
 {
     public class AzureServiceBusConsumer : IAzureServiceBusConsumer
     {
@@ -29,8 +29,8 @@ namespace Mango.Services.RewardAPI.Messaging
 
             serviceBusConnectionString = _configuration.GetConnectionString("ServiceBus") ?? "";
 
-            paymentCreatedTopic = _configuration[("TopicAndQueueNames:PaymentCreatedTopic")] ?? "";
-            paymentCreatedRewardSubscription = _configuration[("TopicAndQueueNames:PaymentCreated_Reward_Subscription")] ?? "";
+            paymentCreatedTopic = _configuration["TopicAndQueueNames:PaymentCreatedTopic"] ?? "";
+            paymentCreatedRewardSubscription = _configuration["TopicAndQueueNames:PaymentCreated_Reward_Subscription"] ?? "";
 
             var client = new ServiceBusClient(serviceBusConnectionString);
             _rewardProcessor = client.CreateProcessor(paymentCreatedTopic, paymentCreatedRewardSubscription);

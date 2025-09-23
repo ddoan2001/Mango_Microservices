@@ -1,4 +1,4 @@
-﻿namespace Mango.MessageBus
+﻿namespace Mango.Message.AzureBus
 {
     public interface IMessageBus
     {

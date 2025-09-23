@@ -1,4 +1,4 @@
-﻿using Mango.Services.EmailAPI.Messaging;
+﻿using Mango.Services.EmailAPI.Messaging.Azure;
 
 namespace Mango.Services.EmailAPI.Extension
 {

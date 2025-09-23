@@ -1,8 +1,7 @@
 using log4net;
 using log4net.Config;
 using Mango.Services.RewardAPI.Data;
-using Mango.Services.RewardAPI.Extension;
-using Mango.Services.RewardAPI.Messaging;
+using Mango.Services.RewardAPI.Messaging.RabbitMQ;
 using Mango.Services.RewardAPI.Service;
 using Mango.Services.RewardAPI.Service.IService;
 using Mango.Services.RewardAPI.Utility;
@@ -23,13 +22,13 @@ builder.Services.AddDbContext<AppDbContext>(option =>
 // Add services to the container.
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton<IRewardService, RewardService>();
-builder.Services.AddSingleton<IAzureServiceBusConsumer, AzureServiceBusConsumer>();
-builder.Services.AddSingleton<IOrderService, OrderService>();
+builder.Services.AddScoped<IRewardService, RewardService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<BackendApiAuthenticationHttpClientHandler>();
 
 builder.Services.AddHttpClient("Order", u => u.BaseAddress =
 new Uri(builder.Configuration["ServiceUrls:OrderAPI"])).AddHttpMessageHandler<BackendApiAuthenticationHttpClientHandler>();
+builder.Services.AddHostedService<RabbitMQRewardConsumer>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -51,6 +50,6 @@ app.UseAuthorization();
 app.MapControllers();
 await DbInitializer.InitDb(app);
 
-app.UseAzureServiceBusConsumer();
+// app.UseAzureServiceBusConsumer();
 
 app.Run();

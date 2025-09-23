@@ -12,9 +12,11 @@ namespace Mango.Services.RewardAPI.Service
 
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IOrderService _orderService;
+        private readonly AppDbContext _db;
 
-        public RewardService(IServiceScopeFactory scopeFactory, IOrderService orderService)
+        public RewardService(AppDbContext db, IServiceScopeFactory scopeFactory, IOrderService orderService)
         {
+            _db = db;
             _scopeFactory = scopeFactory;
             _orderService = orderService;
         }
@@ -36,11 +38,8 @@ namespace Mango.Services.RewardAPI.Service
                     RewardsDate = DateTime.Now
                 };
 
-                using var scope = _scopeFactory.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                await db.Rewards.AddAsync(reward);
-                await db.SaveChangesAsync();
+                await _db.Rewards.AddAsync(reward);
+                await _db.SaveChangesAsync();
 
                 _logger.Info("[success] Process UpdateRewards end.");
             }

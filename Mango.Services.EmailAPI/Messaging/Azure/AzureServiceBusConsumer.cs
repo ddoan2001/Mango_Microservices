@@ -5,7 +5,7 @@ using Mango.Services.EmailAPI.Service.IService;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace Mango.Services.EmailAPI.Messaging
+namespace Mango.Services.EmailAPI.Messaging.Azure
 {
     public class AzureServiceBusConsumer : IAzureServiceBusConsumer
     {
@@ -30,8 +30,8 @@ namespace Mango.Services.EmailAPI.Messaging
 
             serviceBusConnectionString = _configuration.GetConnectionString("ServiceBus") ?? "";
 
-            emailCartQueue = _configuration[("TopicAndQueueNames:EmailShoppingCartQueue")] ?? "";
-            emailRegisterUserQueue = _configuration[("TopicAndQueueNames:RegisterUserQueue")] ?? "";
+            emailCartQueue = _configuration["TopicAndQueueNames:EmailShoppingCartQueue"] ?? "";
+            emailRegisterUserQueue = _configuration["TopicAndQueueNames:RegisterUserQueue"] ?? "";
 
             var client = new ServiceBusClient(serviceBusConnectionString);
             _emailCartProcessor = client.CreateProcessor(emailCartQueue);

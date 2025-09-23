@@ -1,4 +1,4 @@
-﻿using Mango.MessageBus;
+﻿using Mango.Message.RabbitMQ.Sender.Interface;
 using Mango.Services.AuthAPI.Data;
 using Mango.Services.AuthAPI.Models;
 using Mango.Services.AuthAPI.Models.Dto;
@@ -15,13 +15,13 @@ namespace Mango.Services.AuthAPI.Service
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
-        private readonly IMessageBus _messageBus;
+        private readonly IRabbitMQSender _messageBus;
         private readonly IConfiguration _configuration;
 
 
         public AuthService(AppDbContext db, IJwtTokenGenerator jwtTokenGenerator,
             UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager,
-            IMessageBus messageBus, IConfiguration configuration)
+            IRabbitMQSender messageBus, IConfiguration configuration)
         {
             _db = db;
             _jwtTokenGenerator = jwtTokenGenerator;
@@ -91,38 +91,32 @@ namespace Mango.Services.AuthAPI.Service
                 PhoneNumber = registrationRequestDto.PhoneNumber
             };
 
-            try
+
+            var result = await _userManager.CreateAsync(user, registrationRequestDto.Password);
+            if (result.Succeeded)
             {
-                var result = await _userManager.CreateAsync(user, registrationRequestDto.Password);
-                if (result.Succeeded)
+                var userToReturn = _db.ApplicationUsers.First(x => x.UserName == registrationRequestDto.Email);
+
+                UserDto userDto = new()
                 {
-                    var userToReturn = _db.ApplicationUsers.First(x => x.UserName == registrationRequestDto.Email);
+                    Email = registrationRequestDto.Email,
+                    ID = userToReturn.Id,
+                    Name = registrationRequestDto.Name,
+                    PhoneNumber = registrationRequestDto.PhoneNumber
+                };
 
-                    UserDto userDto = new()
-                    {
-                        Email = registrationRequestDto.Email,
-                        ID = userToReturn.Id,
-                        Name = registrationRequestDto.Name,
-                        PhoneNumber = registrationRequestDto.PhoneNumber
-                    };
+                string queueName = _configuration["TopicAndQueueNames:RegisterUserQueue"] ??
+                    throw new InvalidOperationException("TopicAndQueueNames:RegisterUserQueue not found.");
 
-                    string queueName = _configuration["TopicAndQueueNames:RegisterUserQueue"] ??
-                        throw new InvalidOperationException("TopicAndQueueNames:RegisterUserQueue not found.");
+                // publish message to queue
+                await _messageBus.PublishMessage(userDto.Email, queueName);
 
-                    // publish message to queue
-                    await _messageBus.PublishMessage(userDto.Email, queueName);
-
-                    return "";
-                }
-                else
-                {
-                    var message = string.Join(",", result.Errors.Select(e => e.Description));
-                    return message;
-                }
+                return "";
             }
-            catch (Exception ex)
+            else
             {
-                return ex.Message;
+                var message = string.Join(",", result.Errors.Select(e => e.Description));
+                return message;
             }
         }
 

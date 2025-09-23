@@ -5,7 +5,7 @@ using Mango.Services.OrderAPI.Service.IService;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace Mango.Services.OrderAPI.Messaging
+namespace Mango.Services.OrderAPI.Messaging.Azure
 {
     public class AzureServiceBusConsumer : IAzureServiceBusConsumer
     {
@@ -30,8 +30,8 @@ namespace Mango.Services.OrderAPI.Messaging
 
             serviceBusConnectionString = _configuration.GetConnectionString("ServiceBus") ?? "";
 
-            paymentCreatedTopic = _configuration[("TopicAndQueueNames:PaymentCreatedTopic")] ?? "";
-            paymentCreatedOrderSubscription = _configuration[("TopicAndQueueNames:PaymentCreated_Order_Subscription")] ?? "";
+            paymentCreatedTopic = _configuration["TopicAndQueueNames:PaymentCreatedTopic"] ?? "";
+            paymentCreatedOrderSubscription = _configuration["TopicAndQueueNames:PaymentCreated_Order_Subscription"] ?? "";
 
             var client = new ServiceBusClient(serviceBusConnectionString);
             _paymentProcessor = client.CreateProcessor(paymentCreatedTopic, paymentCreatedOrderSubscription);

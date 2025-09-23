@@ -18,11 +18,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mango.MessageBus\Mango.MessageBus.csproj" />
+    <ProjectReference Include="..\Mango.MessageBus\Mango.Message.AzureBus.csproj" />
+    <ProjectReference Include="..\Mango.MessageRabbit\Mango.Message.RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

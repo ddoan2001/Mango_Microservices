@@ -1,6 +1,7 @@
 using log4net;
 using log4net.Config;
-using Mango.MessageBus;
+using Mango.Message.RabbitMQ.Sender;
+using Mango.Message.RabbitMQ.Sender.Interface;
 using Mango.Services.AuthAPI.Data;
 using Mango.Services.AuthAPI.Extensions;
 using Mango.Services.AuthAPI.Models;
@@ -29,7 +30,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFramework
 builder.Services.AddControllers();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IMessageBus, MessageBus>();
+builder.Services.AddScoped<IRabbitMQSender, RabbitMQSender>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

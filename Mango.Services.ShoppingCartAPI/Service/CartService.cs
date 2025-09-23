@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using Mango.MessageBus;
+using Mango.Cache.Interface;
+using Mango.Message.RabbitMQ.Sender.Interface;
 using Mango.Services.ShoppingCartAPI.Data;
 using Mango.Services.ShoppingCartAPI.Models;
 using Mango.Services.ShoppingCartAPI.Models.Dto;
@@ -15,11 +16,15 @@ namespace Mango.Services.ShoppingCartAPI.Service
         private readonly AppDbContext _db;
         private readonly IProductService _productService;
         private readonly ICouponService _couponService;
-        private readonly IMessageBus _messageBus;
+        private readonly IRabbitMQSender _messageBus;
         private readonly IConfiguration _configuration;
+        private readonly ICacheFactory _cacheFactory;
+        private const string Cache_Manage_Carts = "Cache_Manage_Carts";
+        private const string Cache_Key_Unit_ById_Carts = "Cache_Key_Unit_ById_Carts";
 
         public CartService(IMapper mapper, AppDbContext db, IProductService productService,
-            ICouponService couponService, IMessageBus messageBus, IConfiguration configuration)
+            ICouponService couponService, IRabbitMQSender messageBus, IConfiguration configuration
+            , ICacheFactory cacheFactory)
         {
             _mapper = mapper;
             _db = db;
@@ -27,6 +32,7 @@ namespace Mango.Services.ShoppingCartAPI.Service
             _couponService = couponService; // Initialize ICouponService
             _messageBus = messageBus; // Initialize IMessageBus
             _configuration = configuration;
+            _cacheFactory = cacheFactory;
         }
 
         public async Task<bool> ApplyCoupon(CartHeaderDto cartDto)
@@ -72,6 +78,17 @@ namespace Mango.Services.ShoppingCartAPI.Service
 
         public async Task<CartHeaderDto?> GetCart(string userId)
         {
+            // Get cache manager
+            var cacheManager = _cacheFactory.GetCacheManager(Cache_Manage_Carts);
+
+            // Create unique cache key based on userId
+            string key = $"{Cache_Key_Unit_ById_Carts}_{userId}";
+
+            if (cacheManager.Contains(key))
+            {
+                return (CartHeaderDto)cacheManager.GetData(key);
+            }
+
             var cart = _mapper.Map<CartHeaderDto>(await RetrieveCartByUserId(userId));
 
             if (cart == null || cart.CartDetails == null || cart.CartDetails.Count == 0)
@@ -99,6 +116,9 @@ namespace Mango.Services.ShoppingCartAPI.Service
                     cart.Discount = coupon.DiscountAmount;
                 }
             }
+
+            // Adding data to cache
+            cacheManager.AddOrUpdate(key, cart);
 
             return cart;
         }

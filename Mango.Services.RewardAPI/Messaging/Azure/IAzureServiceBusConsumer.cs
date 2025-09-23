@@ -1,4 +1,4 @@
-﻿namespace Mango.Services.EmailAPI.Messaging
+﻿namespace Mango.Services.RewardAPI.Messaging.Azure
 {
     public interface IAzureServiceBusConsumer
     {

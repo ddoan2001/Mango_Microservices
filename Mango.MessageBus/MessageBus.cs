@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace Mango.MessageBus
+namespace Mango.Message.AzureBus
 {
     public class MessageBus(IConfiguration configuration) : IMessageBus
     {

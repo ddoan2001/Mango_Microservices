@@ -22,7 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.Services.ProductAPI",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.Services.ShoppingCartAPI", "Mango.Services.ShoppingCartAPI\Mango.Services.ShoppingCartAPI.csproj", "{0123A399-30E0-41DD-B651-D79A4ACEF8A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.MessageBus", "Mango.MessageBus\Mango.MessageBus.csproj", "{A6497548-3D74-44E3-97BD-77F2AB94C517}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.Message.AzureBus", "Mango.MessageBus\Mango.Message.AzureBus.csproj", "{A6497548-3D74-44E3-97BD-77F2AB94C517}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.Services.EmailAPI", "Mango.Services.EmailAPI\Mango.Services.EmailAPI.csproj", "{EFED6040-73FA-404F-8BAD-D7DE9AD1657D}"
 EndProject
@@ -33,6 +33,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.Services.RewardAPI", "Mango.Services.RewardAPI\Mango.Services.RewardAPI.csproj", "{A0BD8065-EE27-4926-A4B0-66276652466B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.GatewaySolution", "Mango.GatewaySolution\Mango.GatewaySolution.csproj", "{524F9B94-D80F-414D-AC01-27526E24B337}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.Message.RabbitMQ", "Mango.MessageRabbit\Mango.Message.RabbitMQ.csproj", "{AF8F56FF-98B3-4A3C-9D79-5536FBBA8A5F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cache", "Cache", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.Cache", "Mango.Cache\Mango.Cache.csproj", "{7BE6E756-C6CC-4587-9C0D-BD442E41E34F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{376CFDF0-769E-460C-A740-2706E1315E58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mango.Common.Configuration.AppSetting", "Mango.Common.Configuration.AppSetting\Mango.Common.Configuration.AppSetting.csproj", "{68932B84-DBD5-4F34-BBAD-697A72E998C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,6 +90,18 @@ Global
 		{524F9B94-D80F-414D-AC01-27526E24B337}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{524F9B94-D80F-414D-AC01-27526E24B337}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{524F9B94-D80F-414D-AC01-27526E24B337}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF8F56FF-98B3-4A3C-9D79-5536FBBA8A5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF8F56FF-98B3-4A3C-9D79-5536FBBA8A5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF8F56FF-98B3-4A3C-9D79-5536FBBA8A5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF8F56FF-98B3-4A3C-9D79-5536FBBA8A5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE6E756-C6CC-4587-9C0D-BD442E41E34F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE6E756-C6CC-4587-9C0D-BD442E41E34F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE6E756-C6CC-4587-9C0D-BD442E41E34F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE6E756-C6CC-4587-9C0D-BD442E41E34F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68932B84-DBD5-4F34-BBAD-697A72E998C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68932B84-DBD5-4F34-BBAD-697A72E998C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68932B84-DBD5-4F34-BBAD-697A72E998C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68932B84-DBD5-4F34-BBAD-697A72E998C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +117,9 @@ Global
 		{45CA98D7-F823-4911-A19A-4BA59E8198B4} = {CB446569-D1B5-48E6-8179-4F23445AC91A}
 		{A0BD8065-EE27-4926-A4B0-66276652466B} = {CB446569-D1B5-48E6-8179-4F23445AC91A}
 		{524F9B94-D80F-414D-AC01-27526E24B337} = {4932C7E4-3EAF-451E-9485-914B3F6FAB56}
+		{AF8F56FF-98B3-4A3C-9D79-5536FBBA8A5F} = {CF161ECA-D413-4063-A9E5-99188EEC9E8C}
+		{7BE6E756-C6CC-4587-9C0D-BD442E41E34F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{68932B84-DBD5-4F34-BBAD-697A72E998C5} = {376CFDF0-769E-460C-A740-2706E1315E58}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {39045C7B-1464-45FE-865D-4A8BD935E9C7}

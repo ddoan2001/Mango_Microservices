@@ -1,4 +1,4 @@
-﻿using Mango.Services.OrderAPI.Messaging;
+﻿using Mango.Services.OrderAPI.Messaging.Azure;
 
 namespace Mango.Services.OrderAPI.Extension
 {

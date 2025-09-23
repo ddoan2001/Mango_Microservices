@@ -1,4 +1,4 @@
-﻿using Mango.MessageBus;
+﻿using Mango.Message.RabbitMQ.Sender.Interface;
 using Mango.Services.PaymentAPI.Models.Dto.Payment;
 using Mango.Services.PaymentAPI.Service.IService;
 using Mango.Services.PaymentAPI.Utility;
@@ -6,28 +6,33 @@ using Stripe;
 
 namespace Mango.Services.PaymentAPI.Service
 {
-    public class PaymentService : IPaymentService
+    public class PaymentService(
+            IConfiguration config,
+            IOrderService orderService,
+            IHttpContextAccessor httpContextAccessor,
+            IConfiguration configuration,
+            IRabbitMQSender messageBus)
+            : IPaymentService
     {
-        private const string PaymentCreatedTopicName = "TopicAndQueueNames:PaymentCreatedTopic";
-        private readonly IConfiguration _config;
-        private readonly IOrderService _orderService;
-        private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpContext _httpContext;
-        private readonly IMessageBus _messageBus;
+        private readonly IConfiguration _config = config;
+        private readonly IOrderService _orderService = orderService;
+        private readonly IConfiguration _configuration = configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly IRabbitMQSender _messageBus = messageBus;
 
-        public PaymentService(IConfiguration config, IOrderService orderService,
-            IHttpContextAccessor httpContextAccessor, IConfiguration configuration,
-            IMessageBus messageBus)
-        {
-            _config = config;
-            _orderService = orderService;
-            _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
-            // Use IHttpContextAccessor to access HttpContext
-            _httpContext = _httpContextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContext is not available.");
-            _messageBus = messageBus;
-        }
+        // Topic and Queue names from appsettings.json
+        #region Topic and Queue Names
+        private string PaymentCreatedTopic => _configuration["TopicAndQueueNames:PaymentCreatedTopic"] ??
+            throw new ArgumentNullException("PaymentCreatedTopic");
+        private string PaymentCreatedSub_Order_Key => _configuration["TopicAndQueueNames:PaymentCreatedSub_Order_Key"] ??
+            throw new ArgumentNullException("PaymentCreatedSub_Order_Key");
+        private string PaymentCreatedSub_Order_Value => _configuration["TopicAndQueueNames:PaymentCreatedSub_Order_Value"] ??
+            throw new ArgumentNullException("PaymentCreatedSub_Order_Value");
+        private string PaymentCreatedSub_Reward_Key => _configuration["TopicAndQueueNames:PaymentCreatedSub_Reward_Key"] ??
+            throw new ArgumentNullException("PaymentCreatedSub_Reward_Key");
+        private string PaymentCreatedSub_Reward_Value => _configuration["TopicAndQueueNames:PaymentCreatedSub_Reward_Value"] ??
+            throw new ArgumentNullException("PaymentCreatedSub_Reward_Value");
+        #endregion
 
         public async Task<PaymentIntent> CreateOrUpdatePaymentIntent(PaymentDto paymentDto)
         {
@@ -99,7 +104,10 @@ namespace Mango.Services.PaymentAPI.Service
         {
             try
             {
-                return EventUtility.ConstructEvent(json, _httpContext.Request.Headers["Stripe-Signature"], _config["StripeSettings:WhSecret"]);
+                return EventUtility.ConstructEvent(
+                    json,
+                    _httpContextAccessor?.HttpContext?.Request.Headers["Stripe-Signature"],
+                    _config["StripeSettings:WhSecret"]);
             }
             catch (Exception ex)
             {
@@ -110,8 +118,11 @@ namespace Mango.Services.PaymentAPI.Service
         private async Task HandlePaymentIntentSucceeded(PaymentIntent intent)
         {
             // need sent event to update orderStatus, clear order details, and update product stock
-            string topicName = _configuration.GetValue<string>(PaymentCreatedTopicName) ??
-                throw new Exception("Cannot get PaymentTopicName");
+            Dictionary<string, string> queues = new()
+                {
+                    { PaymentCreatedSub_Order_Key, PaymentCreatedSub_Order_Value },
+                    { PaymentCreatedSub_Reward_Key, PaymentCreatedSub_Reward_Value }
+                };
 
             PaymentQueueDto paymentQueueDto = new()
             {
@@ -120,15 +131,11 @@ namespace Mango.Services.PaymentAPI.Service
                 Total = intent.Amount
             };
 
-            await _messageBus.PublishMessage(paymentQueueDto, topicName);
+            await _messageBus.PublishMessage(paymentQueueDto, PaymentCreatedTopic, queues);
         }
 
         private async Task HandlePaymentIntentFailed(PaymentIntent intent)
         {
-            // need sent event to update orderStatus, and update product stock
-            string topicName = _configuration.GetValue<string>(PaymentCreatedTopicName) ??
-                throw new Exception("Cannot get PaymentTopicName");
-
             PaymentQueueDto paymentQueueDto = new()
             {
                 PaymentIntentId = intent.Id,
@@ -136,7 +143,7 @@ namespace Mango.Services.PaymentAPI.Service
                 Total = intent.Amount
             };
 
-            await _messageBus.PublishMessage(paymentQueueDto, topicName);
+            await _messageBus.PublishMessage(paymentQueueDto, PaymentCreatedTopic);
         }
     }
 }
