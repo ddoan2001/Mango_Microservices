@@ -1,7 +1,7 @@
 services:
   redis:
     image: "redis:latest"
-    container_name: "redis_memory"
+    container_name: "mango_redis"
     hostname: ${REDIS_HOST}
     ports:
       - "${REDIS_PORT}:6379"
@@ -33,7 +33,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: "rabbitmq_queue"
+    container_name: "mango_rabbitmq"
     hostname: ${RABBIT_HOST}
     ports:
       - "${RABBIT_PORT}:5672" # AMQP protocol port
