@@ -5,6 +5,15 @@ services:
     hostname: ${REDIS_HOST}
     ports:
       - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -64,3 +73,4 @@ volumes:
   sqlserver_data:
   rabbitmq_data:
   rabbitmq_log:
+  redis_data:
