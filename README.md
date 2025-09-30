@@ -3,20 +3,30 @@
 > [!NOTE]
 > For BE
 
-```bash
--- Running docker CLI
+# Docker Commands
+
+## Start Services
+
+```powershell
 # 1. Start all containers
 docker-compose -f docker-compose-dev.yml up -d
 
-# 2. Wait for SQL Server to be ready (optional test)
-docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${DB_PASSWORD}' -Q "SELECT @@VERSION" -C
+# 2. Load environment variables and wait for SQL Server
+# Get password from .env
+$password = $(Get-Content .env | Select-String "DB_PASSWORD=(.*)").Matches.Groups[1].Value
 
-# 3. Initialize databases (THIS IS THE MANUAL STEP)
-docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${DB_PASSWORD}' -i /scripts/01-create-databases.sql -C
+# Test SQL Server connection
+docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$password" -Q "SELECT @@VERSION" -C
+
+# 3. Initialize databases
+docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$password" -i /scripts/01-create-databases.sql -C
 
 # 4. Verify databases were created
-docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${DB_PASSWORD}' -Q "SELECT name FROM sys.databases WHERE name LIKE 'Mango_%'" -C
+docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$password" -Q "SELECT name FROM sys.databases WHERE name LIKE 'Mango_%'" -C
 
+# 5. Clear the variable
+$password = $null
+Remove-Variable -Name "password" -Force -ErrorAction SilentlyContinue
 ```
 
 ```bash
