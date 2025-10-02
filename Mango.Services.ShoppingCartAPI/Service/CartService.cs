@@ -62,7 +62,12 @@ namespace Mango.Services.ShoppingCartAPI.Service
             var result = await _db.SaveChangesAsync() > 0;
             if (!result) throw new Exception("Failed to save cart for user: " + inputCartDto.UserId);
 
-            return _mapper.Map<CartHeaderDto>(cart);
+            var res = _mapper.Map<CartHeaderDto>(cart);
+
+            // Clear cart cache
+            ClearCartCache(inputCartDto.UserId);
+
+            return res;
 
         }
 
@@ -131,7 +136,14 @@ namespace Mango.Services.ShoppingCartAPI.Service
             cart.RemoveItem(inputCartDto.ProductId, inputCartDto.Quantity);
 
             var result = await _db.SaveChangesAsync() > 0;
-            if (result) return true;
+
+            if (result)
+            {
+                // Clear cart cache
+                ClearCartCache(inputCartDto.UserId);
+
+                return true;
+            }
             return false;
         }
 
@@ -143,7 +155,13 @@ namespace Mango.Services.ShoppingCartAPI.Service
             cart.RemoveItems(listItemsDto.Items);
 
             var result = await _db.SaveChangesAsync() > 0;
-            if (result) return true;
+            if (result)
+            {
+                // Clear cart cache
+                ClearCartCache(listItemsDto.UserId);
+
+                return true;
+            }
             return false;
         }
 
@@ -164,6 +182,22 @@ namespace Mango.Services.ShoppingCartAPI.Service
             return await _db.CartHeaders
                 .Include(x => x.CartDetails)
                 .FirstOrDefaultAsync(x => x.UserId == userId);
+        }
+
+        /// <summary>
+        /// Clear cart cache by userId
+        /// </summary>
+        /// <param name="userId"></param>
+        private void ClearCartCache(string userId)
+        {
+            // Get cache manager
+            var cacheManager = _cacheFactory.GetCacheManager(Cache_Manage_Carts);
+
+            // Create unique cache key based on userId
+            string key = $"{Cache_Key_Unit_ById_Carts}_{userId}";
+
+            // Clear cache
+            cacheManager.RemoveData(key);
         }
     }
 }

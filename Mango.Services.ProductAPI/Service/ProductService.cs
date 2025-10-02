@@ -82,6 +82,9 @@ namespace Mango.Services.ProductAPI.Service
             _db.Products.Update(product);
             _db.SaveChanges();
 
+            // 4. Clear cache
+            _cacheFactory.ClearUserCache(Cache_Manager_Products);
+
             return product;
         }
 
@@ -139,6 +142,9 @@ namespace Mango.Services.ProductAPI.Service
             // 3. Update to database
             _db.Products.Update(product);
             _db.SaveChanges();
+
+            // 4. Clear cache
+            _cacheFactory.ClearUserCache(Cache_Manager_Products);
             return product;
         }
 
@@ -155,7 +161,12 @@ namespace Mango.Services.ProductAPI.Service
                 }
             }
             _db.Products.Remove(product);
-            return await _db.SaveChangesAsync();
+            var res = await _db.SaveChangesAsync();
+
+            // Clear cache
+            _cacheFactory.ClearUserCache(Cache_Manager_Products);
+
+            return res;
         }
 
         public async Task<Filter> GetFilters()
