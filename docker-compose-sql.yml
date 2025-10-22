@@ -1,32 +1,35 @@
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: "mango_sqlserver"
-    hostname: ${DB_HOST}
+    container_name: ${DB_SQL_CONTAINER_NAME}
+    hostname: ${DB_SQL_HOST}
     ports:
-      - "${DB_PORT}:1433"
+      - "${DB_SQL_PORT}:1433"
     environment:
+      # Basic Configuration
       ACCEPT_EULA: Y
-      MSSQL_SA_PASSWORD: ${DB_PASSWORD}
+      MSSQL_SA_PASSWORD: ${DB_SQL_PASSWORD}
       MSSQL_PID: Express
+      MSSQL_ENCRYPT: "true"
+      MSSQL_TRUST_CERT: "true"
     volumes:
-      - sqlserver_data:/var/opt/mssql
-      - ./init-db:/scripts
+      - sqlserver_data:/var/opt/mssql # Persist SQL Server data
+      - ./DatabaseScript/SQLServer/Sqls:/scripts # Bind mount for SQL scripts
     restart: unless-stopped
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -Q 'SELECT 1' -C",
+          '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -Q ''SELECT @@SERVERNAME, @@VERSION, SERVERPROPERTY("Edition")'' -C -b -t 30 -v TRUST=''TrustServerCertificate=yes''',
         ]
-      interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 10s
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   adminer:
     image: adminer:latest
-    container_name: "mango_adminer"
+    container_name: ${ADMINER_CONTAINER_NAME}
     hostname: ${ADMINER_HOST}
     ports:
       - "${ADMINER_PORT}:8080"
@@ -39,7 +42,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: "mango_rabbitmq"
+    container_name: ${RABBIT_CONTAINER_NAME}
     hostname: ${RABBIT_HOST}
     ports:
       - "${RABBIT_PORT}:5672" # AMQP protocol port
@@ -55,7 +58,7 @@ services:
 
   redis:
     image: "redis:latest"
-    container_name: "mango_redis"
+    container_name: ${REDIS_CONTAINER_NAME}
     hostname: ${REDIS_HOST}
     ports:
       - "${REDIS_PORT}:6379"
