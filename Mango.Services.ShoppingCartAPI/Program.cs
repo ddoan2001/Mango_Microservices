@@ -1,8 +1,7 @@
 using AutoMapper;
 using log4net;
 using log4net.Config;
-using Mango.Cache;
-using Mango.Cache.Interface;
+using Mango.Cache.Extensions;
 using Mango.Common.Configuration.AppSetting;
 using Mango.Message.RabbitMQ.Models;
 using Mango.Message.RabbitMQ.Sender;
@@ -58,9 +57,8 @@ new Uri(builder.Configuration["ServiceUrls:CouponAPI"])).AddHttpMessageHandler<B
 builder.Services.Configure<CacheSettings>(
     builder.Configuration.GetSection(CacheSettings.SectionName));
 
-// Register cache services with proper lifetimes
-builder.Services.AddSingleton<ICacheFactory, CacheFactory>();
-builder.Services.AddTransient<ICacheManager, MemoryCacheManager>();
+// Register cache services
+builder.Services.AddMangoCache();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>

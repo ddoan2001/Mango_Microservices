@@ -21,7 +21,11 @@ namespace Mango.Services.ProductAPI.Service
         private const string Cache_Manager_Products = "Cache_Manager_Products";
         private const string Cache_Key_Global_Products = "Cache_Key_Global_Products";
 
-        public ProductService(IMapper mapper, AppDbContext db, IHttpContextAccessor httpContextAccessor, ICacheFactory cacheFactory)
+        public ProductService(
+            IMapper mapper,
+            AppDbContext db,
+            IHttpContextAccessor httpContextAccessor,
+            ICacheFactory cacheFactory)
         {
             _mapper = mapper;
             _db = db;
