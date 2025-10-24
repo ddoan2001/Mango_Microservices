@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: ${DB_POSTGRES_CONTAINER_NAME}
+    hostname: ${DB_POSTGRES_HOST}
+    ports:
+      - "${DB_POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist PostgreSQL data
+      - ./DatabaseScript/PostgreSQL/Sqls:/scripts # Bind mount for SQL scripts
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_POSTGRES_USER} -d ${DB_POSTGRES_DB} && psql -U ${DB_POSTGRES_USER} -d ${DB_POSTGRES_DB} -c 'SELECT 1'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  adminer:
+    image: adminer:latest
+    container_name: ${ADMINER_CONTAINER_NAME}
+    hostname: ${ADMINER_HOST}
+    ports:
+      - "${ADMINER_PORT}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: "pepa-linha-dark"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ${RABBIT_CONTAINER_NAME}
+    hostname: ${RABBIT_HOST}
+    ports:
+      - "${RABBIT_PORT}:5672" # AMQP protocol port
+      - "${RABBIT_MANAGEMENT_PORT}:15672" # RabbitMQ Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: ${RABBIT_VHOST}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
+    restart: unless-stopped
+
+  redis:
+    image: "redis:latest"
+    container_name: ${REDIS_CONTAINER_NAME}
+    hostname: ${REDIS_HOST}
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  rabbitmq_log:
+  redis_data:

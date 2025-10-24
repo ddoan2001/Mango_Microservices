@@ -1,32 +1,133 @@
-# Here is resource for Mango.API Solution.
+# Mango API Solution Setup Guide
 
-> [!NOTE]
-> For BE
+## Prerequisites
 
-# Docker Commands
+- Docker Desktop
+- PowerShell 7+
+- .NET 8.0 SDK
 
-## Start Services
+## Quick Start
+
+### 1. Environment Setup
+
+```powershell
+# Clone and navigate to project
+cd c:\Workspace\Code\Mango_Microservices
+
+# Verify Docker is running
+docker --version
+```
+
+### 2. Start Infrastructure Services
+
+```powershell
+# Start all services
+docker-compose up -d
+
+# Alternative: Start specific services
+docker-compose -f docker-compose-sql.yml up -d     # SQL Server only
+docker-compose -f docker-compose-postgres.yml up -d # PostgreSQL only
+```
+
+### 3. Database Setup
+
+#### SQL Server
+
+```powershell
+# Load environment variables
+$env:DB_PASSWORD = (Get-Content .env | Where-Object { $_ -match "^DB_SQL_PASSWORD=" }) -replace "^DB_SQL_PASSWORD=",""
+
+try {
+    # Test connection
+    docker-compose exec sqlserver /opt/mssql-tools18/bin/sqlcmd `
+        -S localhost -U sa -P "$env:DB_PASSWORD" `
+        -Q "SELECT @@VERSION" -C
+
+    # Initialize database
+    docker-compose exec sqlserver /opt/mssql-tools18/bin/sqlcmd `
+        -S localhost -U sa -P "$env:DB_PASSWORD" `
+        -i /scripts/01-create-databases.sql -C
+} finally {
+    # Clear sensitive data
+    Remove-Item Env:\DB_PASSWORD -ErrorAction SilentlyContinue
+}
+```
+
+#### PostgreSQL
 
 ```powershell
 # 1. Start all containers
-docker-compose -f docker-compose-dev.yml up -d
+docker-compose -f docker-compose-postgres.yml up -d
 
-# 2. Load environment variables and wait for SQL Server
-# Get password from .env
-$password = $(Get-Content .env | Select-String "DB_PASSWORD=(.*)").Matches.Groups[1].Value
+# 2. Load environment variables securely
+try {
+    $env:PGPASSWORD = (Get-Content .env | Where-Object { $_ -match "^DB_POSTGRES_PASSWORD=" }) -replace "^DB_POSTGRES_PASSWORD=",""
+    $env:PGUSER = (Get-Content .env | Where-Object { $_ -match "^DB_POSTGRES_USER=" }) -replace "^DB_POSTGRES_USER=",""
+    $env:PGDATABASE = (Get-Content .env | Where-Object { $_ -match "^DB_POSTGRES_DB=" }) -replace "^DB_POSTGRES_DB=",""
 
-# Test SQL Server connection
-docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$password" -Q "SELECT @@VERSION" -C
+    # 3. Test PostgreSQL connection
+    docker-compose -f docker-compose-postgres.yml exec postgres `
+        psql -U "$env:PGUSER" -d "$env:PGDATABASE" -c "SELECT version();"
 
-# 3. Initialize databases
-docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$password" -i /scripts/01-create-databases.sql -C
+    # 4. Initialize databases (if you have initialization scripts)
+    docker-compose -f docker-compose-postgres.yml exec postgres `
+        psql -U "$env:PGUSER" -d "$env:PGDATABASE" -f /scripts/01-create-databases.sql
 
-# 4. Verify databases were created
-docker-compose -f docker-compose-dev.yml exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$password" -Q "SELECT name FROM sys.databases WHERE name LIKE 'Mango_%'" -C
+    # 5. Verify databases were created
+    docker-compose -f docker-compose-postgres.yml exec postgres `
+        psql -U "$env:PGUSER" -d "$env:PGDATABASE" -c "SELECT datname FROM pg_database WHERE datname LIKE 'Mango_%';"
 
-# 5. Clear the variable
-$password = $null
-Remove-Variable -Name "password" -Force -ErrorAction SilentlyContinue
+} finally {
+    # 6. Clear sensitive environment variables
+    Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
+    Remove-Item Env:\PGUSER -ErrorAction SilentlyContinue
+    Remove-Item Env:\PGDATABASE -ErrorAction SilentlyContinue
+}
+```
+
+### 4. Verify Services
+
+```powershell
+# Check all container statuses
+docker-compose ps
+
+# View logs
+docker-compose logs -f
+
+# Check specific service logs
+docker-compose logs sqlserver
+docker-compose logs postgres
+docker-compose logs rabbitmq
+docker-compose logs redis
+```
+
+### 5. Development Commands
+
+```powershell
+# Update database with migrations
+dotnet ef database update
+
+# Remove last migration
+dotnet ef migrations remove
+
+# Drop database
+dotnet ef database drop --force
+
+# Update EF Tools
+dotnet tool update --global dotnet-ef
+```
+
+### 6. Cleanup
+
+```powershell
+# Stop all containers
+docker-compose down
+
+# Remove volumes (careful - destroys data)
+docker-compose down -v
+
+# Remove all containers and images
+docker-compose down --rmi all
 ```
 
 ```bash
