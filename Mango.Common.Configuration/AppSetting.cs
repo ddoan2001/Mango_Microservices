@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 
 
-namespace Mango.Common.Configuration.AppSetting
+namespace Mango.Common.Configuration
 {
     public class AppSetting
     {

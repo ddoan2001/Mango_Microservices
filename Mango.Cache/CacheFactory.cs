@@ -1,7 +1,7 @@
 ﻿using log4net;
 using Mango.Cache.Interface;
 using Mango.Cache.Resolvers;
-using Mango.Common.Configuration.AppSetting;
+using Mango.Common.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;

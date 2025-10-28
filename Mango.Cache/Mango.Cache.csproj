@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mango.Common.Configuration.AppSetting\Mango.Common.Configuration.AppSetting.csproj" />
+    <ProjectReference Include="..\Mango.Common.Configuration\Mango.Common.Configuration.csproj" />
   </ItemGroup>
 
 </Project>

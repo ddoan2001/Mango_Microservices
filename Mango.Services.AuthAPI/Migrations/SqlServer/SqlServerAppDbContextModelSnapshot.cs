@@ -4,19 +4,16 @@ using Mango.Services.AuthAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Mango.Services.AuthAPI.Migrations
+namespace Mango.Services.AuthAPI.Migrations.SqlServer
 {
-    [DbContext(typeof(AppDbContext))]
-    [Migration("20250722024841_AddressUserEntityAdded")]
-    partial class AddressUserEntityAdded
+    [DbContext(typeof(SqlServerAppDbContext))]
+    partial class SqlServerAppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

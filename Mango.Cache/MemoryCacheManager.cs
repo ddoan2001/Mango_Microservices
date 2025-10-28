@@ -1,5 +1,5 @@
 ﻿using Mango.Cache.Interface;
-using Mango.Common.Configuration.AppSetting;
+using Mango.Common.Configuration;
 using Microsoft.Extensions.Options;
 using System.Runtime.Caching;
 

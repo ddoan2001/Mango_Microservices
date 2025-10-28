@@ -1,4 +1,4 @@
-namespace Mango.Common.Configuration.AppSetting
+namespace Mango.Common.Configuration
 {
     /// <summary>
     /// Configuration settings for caching
