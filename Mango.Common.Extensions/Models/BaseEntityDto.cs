@@ -1,6 +1,6 @@
-﻿namespace Mango.Services.OrderAPI.Models.Dto
+namespace Mango.Common.Extensions.Models
 {
-    public class BaseEntityDto
+    public abstract class BaseEntityDto
     {
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

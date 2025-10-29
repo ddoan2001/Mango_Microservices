@@ -1,4 +1,5 @@
-﻿using Mango.Services.OrderAPI.Utility;
+﻿using Mango.Common.Extensions.Models;
+using Mango.Services.OrderAPI.Utility;
 using System.ComponentModel.DataAnnotations;
 
 namespace Mango.Services.OrderAPI.Models
