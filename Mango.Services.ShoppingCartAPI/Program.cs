@@ -13,7 +13,6 @@ using Mango.Services.ShoppingCartAPI.Service;
 using Mango.Services.ShoppingCartAPI.Service.IService;
 using Mango.Services.ShoppingCartAPI.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -83,7 +82,8 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
-Mango.Common.Extensions.WebApplicationBuilderExtensions.AddAppAuthentication(builder);
+
+builder.AddAppAuthentication();
 
 builder.Services.AddAuthorization();
 builder.Services.AddCors();

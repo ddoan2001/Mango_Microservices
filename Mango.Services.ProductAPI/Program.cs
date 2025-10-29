@@ -6,7 +6,6 @@ using Mango.Common.Configuration;
 using Mango.Common.Extensions;
 using Mango.Services.ProductAPI;
 using Mango.Services.ProductAPI.Data;
-using Mango.Services.ProductAPI.Extensions;
 using Mango.Services.ProductAPI.Service;
 using Mango.Services.ProductAPI.Service.IService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -78,7 +77,8 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
-Mango.Common.Extensions.WebApplicationBuilderExtensions.AddAppAuthentication(builder);
+
+builder.AddAppAuthentication();
 
 builder.Services.AddAuthorization();
 builder.Services.AddCors();
