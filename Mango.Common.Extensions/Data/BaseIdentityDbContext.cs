@@ -26,9 +26,24 @@ namespace Mango.Common.Extensions.Data
 
         private void UpdateTimestamps()
         {
-            var entries = ChangeTracker.Entries<BaseEntity>();
+            // Handle BaseEntity timestamp tracking
+            var baseEntityEntries = ChangeTracker.Entries<BaseEntity>();
+            foreach (var entry in baseEntityEntries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = DateTime.Now;
+                    entry.Entity.UpdatedAt = DateTime.Now;
+                }
+                if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedAt = DateTime.Now;
+                }
+            }
 
-            foreach (var entry in entries)
+            // Handle BaseIdentityUser timestamp tracking
+            var identityUserEntries = ChangeTracker.Entries<BaseIdentityUser>();
+            foreach (var entry in identityUserEntries)
             {
                 if (entry.State == EntityState.Added)
                 {
