@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Mango.Services.EmailAPI.Migrations
+namespace Mango.Services.EmailAPI.Migrations.SqlServer
 {
     /// <inheritdoc />
-    public partial class EmailLoggersAdded : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
