@@ -1,8 +1,9 @@
 ﻿using Mango.Services.PaymentAPI.Utility;
+using Mango.Common.Extensions.Models;
 
 namespace Mango.Services.PaymentAPI.Models.Dto.Order
 {
-    public class OrderHeaderDto
+    public class OrderHeaderDto : BaseEntityDto
     {
         public int OrderHeaderId { get; set; }
         public required string UserId { get; set; }
