@@ -1,8 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+using Mango.Common.Extensions.Models;
 
 namespace Mango.Services.AuthAPI.Models
 {
-    public class Address
+    public class Address : BaseEntity
     {
         [JsonIgnore]
         public int Id { get; set; }
