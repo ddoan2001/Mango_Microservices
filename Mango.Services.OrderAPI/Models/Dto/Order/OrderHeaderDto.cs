@@ -1,4 +1,5 @@
 ﻿using Mango.Services.OrderAPI.Utility;
+using Mango.Common.Extensions.Models;
 
 namespace Mango.Services.OrderAPI.Models.Dto.Order
 {

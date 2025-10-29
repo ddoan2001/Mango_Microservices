@@ -1,8 +1,9 @@
-﻿using Mango.Services.RewardAPI.Models.Dto.Product;
+﻿using Mango.Common.Extensions.Models;
+using Mango.Services.RewardAPI.Models.Dto.Product;
 
 namespace Mango.Services.RewardAPI.Models.Dto.Order
 {
-    public class OrderDetailsDto
+    public class OrderDetailsDto : BaseEntityDto
     {
         public int OrderDetailsId { get; set; }
         public int OrderHeaderId { get; set; }

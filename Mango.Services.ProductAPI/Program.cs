@@ -3,6 +3,7 @@ using log4net;
 using log4net.Config;
 using Mango.Cache.Extensions;
 using Mango.Common.Configuration;
+using Mango.Common.Extensions;
 using Mango.Services.ProductAPI;
 using Mango.Services.ProductAPI.Data;
 using Mango.Services.ProductAPI.Extensions;
@@ -25,10 +26,8 @@ XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 //    Directory.CreateDirectory(logDir);
 //}
 
-builder.Services.AddDbContext<AppDbContext>(option =>
-{
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+// Add database provider (PostgreSQL/SQL Server support)
+builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
 
 builder.Services.AddStackExchangeRedisCache(option =>
 {
@@ -43,6 +42,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IProductService, ProductService>();
+
+// Register custom database initializer
+builder.Services.AddScoped<Mango.Common.Extensions.Interface.ICustomDatabaseInitializer, ProductDatabaseInitializer>();
 
 // Configure cache settings from appsettings.json
 builder.Services.Configure<CacheSettings>(
@@ -76,7 +78,7 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
-builder.AddAppAuthentication();
+Mango.Common.Extensions.WebApplicationBuilderExtensions.AddAppAuthentication(builder);
 
 builder.Services.AddAuthorization();
 builder.Services.AddCors();
@@ -101,6 +103,6 @@ app.UseAuthorization();
 app.UseStaticFiles();
 app.MapControllers();
 
-await DbInitializer.InitDb(app);
+await app.InitializeDatabaseAsync<PostgreSqlAppDbContext, SqlServerAppDbContext>();
 
 app.Run();

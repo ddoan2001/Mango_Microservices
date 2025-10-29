@@ -3,13 +3,13 @@ using log4net.Config;
 using Mango.Message.RabbitMQ.Models;
 using Mango.Message.RabbitMQ.Sender;
 using Mango.Message.RabbitMQ.Sender.Interface;
-using Mango.Services.PaymentAPI.Extensions;
 using Mango.Services.PaymentAPI.Service;
 using Mango.Services.PaymentAPI.Service.IService;
 using Mango.Services.PaymentAPI.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Mango.Common.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

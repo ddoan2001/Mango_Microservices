@@ -1,6 +1,6 @@
-﻿namespace Mango.Services.ShoppingCartAPI.Models
+namespace Mango.Common.Extensions.Models
 {
-    public class BaseEntity
+    public abstract class BaseEntityDto
     {
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

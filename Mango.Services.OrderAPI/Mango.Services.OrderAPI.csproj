@@ -24,7 +24,12 @@
  </ItemGroup>
 
  <ItemGroup>
+   <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+ </ItemGroup>
+
+ <ItemGroup>
    <ProjectReference Include="..\Mango.MessageRabbit\Mango.Message.RabbitMQ.csproj" />
+   <ProjectReference Include="..\Mango.Common.Extensions\Mango.Common.Extensions.csproj" />
  </ItemGroup>
 
 </Project>

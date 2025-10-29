@@ -1,4 +1,6 @@
-﻿namespace Mango.Services.RewardAPI.Models
+﻿using Mango.Common.Extensions.Models;
+
+namespace Mango.Services.RewardAPI.Models
 {
     public class Reward : BaseEntity
     {

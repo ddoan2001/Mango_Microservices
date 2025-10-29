@@ -1,10 +1,11 @@
-﻿using Mango.Services.ShoppingCartAPI.Models.Dto;
+﻿using Mango.Common.Extensions.Models;
+using Mango.Services.ShoppingCartAPI.Models.Dto;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mango.Services.ShoppingCartAPI.Models
 {
-    public class CartDetails
+    public class CartDetails : BaseEntity
     {
         [Key]
         public int CartDetailsId { get; set; }

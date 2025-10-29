@@ -1,8 +1,9 @@
-﻿using Mango.Services.RewardAPI.Utility;
+﻿using Mango.Common.Extensions.Models;
+using Mango.Services.RewardAPI.Utility;
 
 namespace Mango.Services.RewardAPI.Models.Dto.Order
 {
-    public class OrderHeaderDto
+    public class OrderHeaderDto : BaseEntityDto
     {
         public int OrderHeaderId { get; set; }
         public required string UserId { get; set; }
