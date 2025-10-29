@@ -1,27 +1,20 @@
-﻿using Mango.Services.ProductAPI.Models;
+using Mango.Common.Extensions.Interface;
+using Mango.Services.ProductAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mango.Services.ProductAPI.Data
 {
-    public class DbInitializer
+    public class ProductDatabaseInitializer : ICustomDatabaseInitializer
     {
-        public static async Task InitDb(WebApplication app)
+        public async Task InitializeAsync(DbContext context, IServiceProvider serviceProvider)
         {
-            using var scope = app.Services.CreateScope();
+            if (context is not AppDbContext appContext)
+                return;
 
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>()
-                ?? throw new InvalidOperationException("Failed to retrieve store context");
-
-            // migration for category, brand, product
-            if (context.Database.GetPendingMigrations().Any())
-            {
-                context.Database.Migrate();
-            }
-
-            await SeedCatesData(context);
-            await SeedBrandsData(context);
-            await SeedProductsData(context);
-            await context.SaveChangesAsync();
+            await SeedCatesData(appContext);
+            await SeedBrandsData(appContext);
+            await SeedProductsData(appContext);
+            await appContext.SaveChangesAsync();
         }
 
         private static async Task SeedCatesData(AppDbContext context)

@@ -1,6 +1,8 @@
-﻿namespace Mango.Services.ProductAPI.Models.Dto
+﻿using Mango.Common.Extensions.Models;
+
+namespace Mango.Services.ProductAPI.Models.Dto
 {
-    public class ProductDto
+    public class ProductDto : BaseEntityDto
     {
         public int ProductId { get; set; }
         public string Name { get; set; }

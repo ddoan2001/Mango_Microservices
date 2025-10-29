@@ -28,5 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mango.Cache\Mango.Cache.csproj" />
+    <ProjectReference Include="..\Mango.Common.Extensions\Mango.Common.Extensions.csproj" />
   </ItemGroup>
 </Project>
