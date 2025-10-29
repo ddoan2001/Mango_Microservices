@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Mango.Common.Extensions.Models;
 
 namespace Mango.Services.CouponAPI.Models
 {

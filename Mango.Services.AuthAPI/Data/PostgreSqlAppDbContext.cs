@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Mango.Common.Extensions.Data;
 
 namespace Mango.Services.AuthAPI.Data
 {
