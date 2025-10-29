@@ -1,6 +1,8 @@
-﻿namespace Mango.Services.ShoppingCartAPI.Models.Dto.Cart
+﻿using Mango.Common.Extensions.Models;
+
+namespace Mango.Services.ShoppingCartAPI.Models.Dto.Cart
 {
-    public class CartHeaderDto
+    public class CartHeaderDto : BaseEntityDto
     {
         public int CartHeaderId { get; set; }
         public string? UserId { get; set; }

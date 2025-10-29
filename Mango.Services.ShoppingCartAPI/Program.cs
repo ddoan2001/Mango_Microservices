@@ -3,12 +3,12 @@ using log4net;
 using log4net.Config;
 using Mango.Cache.Extensions;
 using Mango.Common.Configuration;
+using Mango.Common.Extensions;
 using Mango.Message.RabbitMQ.Models;
 using Mango.Message.RabbitMQ.Sender;
 using Mango.Message.RabbitMQ.Sender.Interface;
 using Mango.Services.ShoppingCartAPI;
 using Mango.Services.ShoppingCartAPI.Data;
-using Mango.Services.ShoppingCartAPI.Extensions;
 using Mango.Services.ShoppingCartAPI.Service;
 using Mango.Services.ShoppingCartAPI.Service.IService;
 using Mango.Services.ShoppingCartAPI.Utility;
@@ -23,10 +23,8 @@ var builder = WebApplication.CreateBuilder(args);
 var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
 XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 
-builder.Services.AddDbContext<AppDbContext>(option =>
-{
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+// Add database provider (PostgreSQL/SQL Server support)
+builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
 
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
@@ -85,7 +83,7 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
-builder.AddAppAuthentication();
+Mango.Common.Extensions.WebApplicationBuilderExtensions.AddAppAuthentication(builder);
 
 builder.Services.AddAuthorization();
 builder.Services.AddCors();
@@ -110,19 +108,6 @@ app.UseAuthorization();
 app.UseStaticFiles();
 app.MapControllers();
 
-ApplyMigration();
+await app.InitializeDatabaseAsync<PostgreSqlAppDbContext, SqlServerAppDbContext>();
 
 app.Run();
-
-void ApplyMigration()
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var _db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        if (_db.Database.GetPendingMigrations().Count() > 0)
-        {
-            _db.Database.Migrate();
-        }
-    }
-}
