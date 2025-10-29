@@ -1,11 +1,10 @@
 using AutoMapper;
 using log4net;
 using log4net.Config;
+using Mango.Common.Extensions;
 using Mango.Services.CouponAPI;
 using Mango.Services.CouponAPI.Data;
-using Mango.Services.CouponAPI.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -15,10 +14,8 @@ var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
 XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 // Add services to the container.
 
-builder.Services.AddDbContext<AppDbContext>(option =>
-{
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+// Read provider from config and configure database
+builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
 
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
@@ -76,19 +73,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-ApplyMigration();
+// Initialize database based on provider
+await app.InitializeDatabaseAsync<PostgreSqlAppDbContext, SqlServerAppDbContext>();
 
 app.Run();
-
-void ApplyMigration()
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var _db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        if (_db.Database.GetPendingMigrations().Count() > 0)
-        {
-            _db.Database.Migrate();
-        }
-    }
-}

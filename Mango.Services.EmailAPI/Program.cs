@@ -9,6 +9,7 @@ using Mango.Message.RabbitMQ.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Reflection;
+using Mango.Common.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,10 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
 XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 
-builder.Services.AddDbContext<AppDbContext>(option =>
-{
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+// Add database provider using shared extensions
+builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
 
 // Configure RabbitMQ connection options
 builder.Services.Configure<RabbitMQConnectionOptions>(builder.Configuration.GetSection(RabbitMQConnectionOptions.SectionName));
@@ -54,6 +53,9 @@ app.UseAuthorization();
 app.MapHealthChecks("/health");
 
 app.MapControllers();
-await DbInitializer.InitDb(app);
+
+// Initialize database using shared extensions
+await app.InitializeDatabaseAsync<PostgreSqlAppDbContext, SqlServerAppDbContext>();
+
 //app.UseAzureServiceBusConsumer();
 app.Run();

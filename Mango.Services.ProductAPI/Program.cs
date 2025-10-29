@@ -2,7 +2,7 @@ using AutoMapper;
 using log4net;
 using log4net.Config;
 using Mango.Cache.Extensions;
-using Mango.Common.Configuration.AppSetting;
+using Mango.Common.Configuration;
 using Mango.Services.ProductAPI;
 using Mango.Services.ProductAPI.Data;
 using Mango.Services.ProductAPI.Extensions;

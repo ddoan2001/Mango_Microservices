@@ -1,6 +1,6 @@
 ﻿using log4net;
 using Mango.Cache.Interface;
-using Mango.Common.Configuration.AppSetting;
+using Mango.Common.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using System.Runtime.Caching;

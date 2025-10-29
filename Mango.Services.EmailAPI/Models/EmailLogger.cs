@@ -1,4 +1,6 @@
-﻿namespace Mango.Services.EmailAPI.Models
+﻿using Mango.Common.Extensions.Models;
+
+namespace Mango.Services.EmailAPI.Models
 {
     public class EmailLogger : BaseEntity
     {

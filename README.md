@@ -158,6 +158,13 @@ nuget:
 
 -update latest version of ef
 -- dotnet tool update --global dotnet-ef
+
+-- migrations PostgreSQL, SQLServer
+
+dotnet ef migrations add InitialCreate --context PostgreSqlAppDbContext --output-dir Migrations/PostgreSQL
+
+dotnet ef migrations add InitialCreate --context SqlServerAppDbContext --output-dir Migrations/SqlServer
+
 ```
 
 > Azure Service Bus
