@@ -1,6 +1,8 @@
-﻿namespace Mango.Services.RewardAPI.Models.Dto.Product
+﻿using Mango.Common.Extensions.Models;
+
+namespace Mango.Services.RewardAPI.Models.Dto.Product
 {
-    public class ProductDto
+    public class ProductDto : BaseEntityDto
     {
         public int ProductId { get; set; }
         public string Name { get; set; }

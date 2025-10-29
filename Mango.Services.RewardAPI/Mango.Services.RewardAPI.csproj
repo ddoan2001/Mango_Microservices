@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mango.MessageRabbit\Mango.Message.RabbitMQ.csproj" />
+    <ProjectReference Include="..\Mango.Common.Extensions\Mango.Common.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

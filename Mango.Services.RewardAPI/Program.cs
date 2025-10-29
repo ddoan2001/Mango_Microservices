@@ -1,5 +1,6 @@
 using log4net;
 using log4net.Config;
+using Mango.Common.Extensions;
 using Mango.Message.RabbitMQ.Models;
 using Mango.Services.RewardAPI.Data;
 using Mango.Services.RewardAPI.Messaging.RabbitMQ;
@@ -15,10 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
 XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 
-builder.Services.AddDbContext<AppDbContext>(option =>
-{
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+// Add database provider (PostgreSQL/SQL Server support)
+builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
 
 // Configure RabbitMQ connection options
 builder.Services.Configure<RabbitMQConnectionOptions>(builder.Configuration.GetSection(RabbitMQConnectionOptions.SectionName));
@@ -52,7 +51,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-await DbInitializer.InitDb(app);
+await app.InitializeDatabaseAsync<PostgreSqlAppDbContext, SqlServerAppDbContext>();
 
 // app.UseAzureServiceBusConsumer();
 
