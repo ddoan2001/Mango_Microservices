@@ -13,7 +13,6 @@ using Mango.Services.ShoppingCartAPI.Service;
 using Mango.Services.ShoppingCartAPI.Service.IService;
 using Mango.Services.ShoppingCartAPI.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -25,6 +24,11 @@ XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 
 // Add database provider (PostgreSQL/SQL Server support)
 builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
+
+builder.Services.AddStackExchangeRedisCache(option =>
+{
+    option.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+});
 
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
@@ -83,7 +87,8 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
-Mango.Common.Extensions.WebApplicationBuilderExtensions.AddAppAuthentication(builder);
+
+builder.AddAppAuthentication();
 
 builder.Services.AddAuthorization();
 builder.Services.AddCors();
