@@ -32,4 +32,8 @@
    <ProjectReference Include="..\Mango.Common.Extensions\Mango.Common.Extensions.csproj" />
  </ItemGroup>
 
+ <ItemGroup>
+   <Folder Include="Migrations\" />
+ </ItemGroup>
+
 </Project>

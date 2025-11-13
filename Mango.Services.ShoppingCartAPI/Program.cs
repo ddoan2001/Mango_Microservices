@@ -25,6 +25,11 @@ XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 // Add database provider (PostgreSQL/SQL Server support)
 builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
 
+builder.Services.AddStackExchangeRedisCache(option =>
+{
+    option.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+});
+
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddSingleton(mapper);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
