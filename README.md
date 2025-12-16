@@ -1,204 +1,249 @@
-# Mango API Solution Setup Guide
+# 🏗️ **MANGO MICROSERVICES ARCHITECTURE OVERVIEW**
 
-## Prerequisites
+## **🔐 1. AuthAPI (Authentication Service)**
+**Port: 7002**
+- **User Management**: Registration, login, role-based authentication
+- **JWT Token Generation**: Issues JWT tokens for authenticated users
+- **Identity Framework Integration**: Uses ASP.NET Core Identity with custom ApplicationUser
+- **Features**:
+  - User registration and login
+  - Role assignment (Admin, Customer)
+  - JWT token generation and validation
+  - Password management
+  - User profile management with timestamps (CreatedAt/UpdatedAt)
 
-- Docker Desktop
-- PowerShell 7+
-- .NET 8.0 SDK
+## **🛍️ 2. ProductAPI (Product Catalog Service)**
+**Port: 7000**
+- **Product Management**: CRUD operations for products
+- **Category & Brand Management**: Organize products by categories and brands
+- **Image Handling**: Product image upload and management
+- **Caching**: Redis/Memory caching for performance
+- **Features**:
+  - Add/Edit/Delete products
+  - Category and brand management
+  - Product search and filtering
+  - Pagination support
+  - Image upload to local storage
+  - Stock quantity tracking
+  - Product seeding with sample data
 
-## Quick Start
+## **🎟️ 3. CouponAPI (Coupon Management Service)**
+**Port: 7001**
+- **Coupon Management**: Create, update, delete discount coupons
+- **Discount Validation**: Validate coupon codes and calculate discounts
+- **Features**:
+  - Create percentage and fixed-amount coupons
+  - Set expiration dates and usage limits
+  - Validate coupon codes
+  - Apply discounts to orders
+  - Coupon code generation
 
-### 1. Environment Setup
+## **🛒 4. ShoppingCartAPI (Cart Management Service)**
+**Port: 7003**
+- **Cart Operations**: Add, remove, update items in shopping cart
+- **User Cart Persistence**: Maintain cart state across sessions
+- **External Service Integration**: Fetch product and coupon data
+- **Messaging**: RabbitMQ integration for cart events
+- **Features**:
+  - Add/remove products to/from cart
+  - Update item quantities
+  - Apply coupons to cart
+  - Calculate cart totals with discounts
+  - Persist cart across user sessions
+  - Integration with Product and Coupon APIs
 
-```powershell
-# Clone and navigate to project
-cd c:\Workspace\Code\Mango_Microservices
+## **📦 5. OrderAPI (Order Management Service)**
+**Port: 7004**
+- **Order Processing**: Create and manage orders
+- **Order Status Tracking**: Track order lifecycle (Pending, Approved, ReadyForPickup, etc.)
+- **Payment Integration**: Handle payment confirmation
+- **Messaging**: RabbitMQ for order events and email notifications
+- **Features**:
+  - Create orders from shopping cart
+  - Order status management
+  - Order history and tracking
+  - Integration with Payment API
+  - Email notifications via RabbitMQ
+  - Shipping address management
 
-# Verify Docker is running
-docker --version
+## **💳 6. PaymentAPI (Payment Processing Service)**
+**Port: 7005**
+- **Stripe Integration**: Process payments using Stripe
+- **Payment Confirmation**: Handle payment success/failure
+- **Order Communication**: Update order status after payment
+- **Features**:
+  - Stripe payment processing
+  - Payment intent creation
+  - Payment confirmation handling
+  - Integration with Order API
+  - Payment status tracking
+  - Secure payment data handling
+
+## **🎁 7. RewardAPI (Loyalty Points Service)**
+**Port: 7006**
+- **Reward Points Management**: Track and award loyalty points
+- **Payment Event Processing**: Listen for successful payments
+- **Point Calculation**: Calculate rewards based on order amounts
+- **Messaging**: RabbitMQ/Azure Service Bus integration
+- **Features**:
+  - Award points for completed orders
+  - Track user reward history
+  - Point calculation algorithms
+  - Integration with payment events
+  - User reward balance tracking
+
+## **📧 8. EmailAPI (Notification Service)**
+**Port: 7007**
+- **Email Processing**: Send transactional emails
+- **Template Management**: Email templates for different events
+- **Queue Processing**: RabbitMQ message consumption
+- **Features**:
+  - Order confirmation emails
+  - Cart abandonment notifications
+  - User registration emails
+  - Password reset notifications
+  - Email template management
+  - Queue-based email processing
+
+## **🌐 9. GatewaySolution (API Gateway)**
+**Port: 7777**
+- **Request Routing**: Route requests to appropriate microservices
+- **Authentication Gateway**: Centralized authentication validation
+- **Load Balancing**: Distribute requests across service instances
+- **Rate Limiting**: Control API usage
+- **Features**:
+  - Ocelot gateway configuration
+  - JWT token validation
+  - Request/response transformation
+  - Service discovery
+  - Cross-cutting concerns (logging, monitoring)
+
+---
+
+# 🔧 **SHARED INFRASTRUCTURE COMPONENTS**
+
+## **📚 Mango.Common.Extensions**
+- **Database Abstraction**: Multi-provider support (PostgreSQL/SQL Server)
+- **Authentication**: Shared JWT configuration
+- **Base Classes**: BaseEntity, BaseIdentityUser, BaseEntityDto
+- **Timestamp Management**: Automatic CreatedAt/UpdatedAt tracking (UTC)
+- **Database Initialization**: Three-tier initialization strategy
+
+## **💾 Mango.Cache**
+- **Caching Strategy**: Redis and Memory cache implementations
+- **Cache Management**: Keyed cache services with configurable expiration
+
+## **🐰 Mango.MessageRabbit**
+- **RabbitMQ Integration**: Message publishing and consuming
+- **Health Monitoring**: Connection health checks
+- **Queue Management**: Configurable queue and exchange setup
+
+## **☁️ Mango.MessageBus**
+- **Azure Service Bus**: Alternative messaging implementation
+- **Topic/Subscription**: Pub/sub messaging patterns
+
+---
+
+# 🔄 **SERVICE COMMUNICATION PATTERNS**
+
+## **Synchronous Communication (HTTP)**
+- **API Gateway** ↔ All Services
+- **ShoppingCartAPI** ↔ **ProductAPI** (product details)
+- **ShoppingCartAPI** ↔ **CouponAPI** (discount validation)
+- **PaymentAPI** ↔ **OrderAPI** (order updates)
+
+## **Asynchronous Communication (Messaging)**
+- **OrderAPI** → **EmailAPI** (order notifications)
+- **PaymentAPI** → **RewardAPI** (reward points)
+- **ShoppingCartAPI** → **EmailAPI** (cart events)
+
+---
+
+# 🎯 **BUSINESS WORKFLOWS**
+
+1. **User Registration/Login**: AuthAPI handles authentication
+2. **Browse Products**: ProductAPI serves catalog with caching
+3. **Apply Coupons**: CouponAPI validates and calculates discounts
+4. **Manage Cart**: ShoppingCartAPI maintains cart state
+5. **Place Order**: OrderAPI creates order from cart
+6. **Process Payment**: PaymentAPI handles Stripe integration
+7. **Award Points**: RewardAPI tracks loyalty rewards
+8. **Send Notifications**: EmailAPI sends confirmation emails
+9. **Gateway Routing**: All external requests go through API Gateway
+
+---
+
+# 🚀 **TECHNICAL ARCHITECTURE**
+
+## **Database Strategy**
+- **Multi-Provider Support**: PostgreSQL and SQL Server
+- **Runtime Switching**: Configure provider via `DatabaseProvider` setting
+- **Shared Base Classes**: BaseEntity for automatic timestamp tracking
+- **Provider-Specific Contexts**: Separate contexts for each database provider
+
+## **Authentication & Authorization**
+- **JWT Tokens**: Shared JWT configuration across all services
+- **Role-Based Access**: Admin and Customer roles
+- **Gateway Authentication**: Centralized token validation
+
+## **Caching Strategy**
+- **Redis**: Distributed caching for production
+- **Memory Cache**: Local caching for development
+- **Configurable**: Switch between providers via configuration
+
+## **Messaging Architecture**
+- **RabbitMQ**: Primary messaging system
+- **Azure Service Bus**: Alternative cloud messaging
+- **Event-Driven**: Asynchronous communication between services
+
+## **Logging & Monitoring**
+- **log4net**: Structured logging across all services
+- **Health Checks**: Service health monitoring
+- **Centralized Configuration**: Shared logging configuration
+
+---
+
+# 📊 **SERVICE DEPENDENCIES**
+
+## **Core Dependencies**
+```
+API Gateway
+├── AuthAPI (Authentication)
+├── ProductAPI (Catalog)
+├── CouponAPI (Discounts)
+├── ShoppingCartAPI (Cart Management)
+├── OrderAPI (Order Processing)
+├── PaymentAPI (Payment Processing)
+├── RewardAPI (Loyalty Points)
+└── EmailAPI (Notifications)
 ```
 
-### 2. Start Infrastructure Services
+## **External Dependencies**
+- **Stripe**: Payment processing
+- **RabbitMQ**: Message broker
+- **Redis**: Distributed caching
+- **PostgreSQL/SQL Server**: Database providers
 
-```powershell
-# Start all services
-docker-compose up -d
+---
 
-# Alternative: Start specific services
-docker-compose -f docker-compose-sql.yml up -d     # SQL Server only
-docker-compose -f docker-compose-postgres.yml up -d # PostgreSQL only
-```
+# 🔐 **SECURITY FEATURES**
 
-### 3. Database Setup
+- **JWT Authentication**: Secure token-based authentication
+- **Role-Based Authorization**: Admin and Customer access levels
+- **API Gateway Security**: Centralized security enforcement
+- **HTTPS Enforcement**: Secure communication
+- **CORS Configuration**: Cross-origin resource sharing control
 
-#### SQL Server
+---
 
-```powershell
-# Load environment variables
-$env:DB_PASSWORD = (Get-Content .env | Where-Object { $_ -match "^DB_SQL_PASSWORD=" }) -replace "^DB_SQL_PASSWORD=",""
+# 🎨 **DESIGN PATTERNS IMPLEMENTED**
 
-try {
-    # Test connection
-    docker-compose exec sqlserver /opt/mssql-tools18/bin/sqlcmd `
-        -S localhost -U sa -P "$env:DB_PASSWORD" `
-        -Q "SELECT @@VERSION" -C
+- **Microservices Architecture**: Domain-driven service separation
+- **API Gateway Pattern**: Centralized routing and security
+- **Repository Pattern**: Data access abstraction
+- **CQRS**: Command Query Responsibility Segregation
+- **Event Sourcing**: Event-driven communication
+- **Circuit Breaker**: Fault tolerance (via HTTP clients)
+- **Shared Kernel**: Common extensions and base classes
 
-    # Initialize database
-    docker-compose exec sqlserver /opt/mssql-tools18/bin/sqlcmd `
-        -S localhost -U sa -P "$env:DB_PASSWORD" `
-        -i /scripts/01-create-databases.sql -C
-} finally {
-    # Clear sensitive data
-    Remove-Item Env:\DB_PASSWORD -ErrorAction SilentlyContinue
-}
-```
-
-#### PostgreSQL
-
-```powershell
-# 1. Start all containers
-docker-compose -f docker-compose-postgres.yml up -d
-
-# 2. Load environment variables securely
-try {
-    $env:PGPASSWORD = (Get-Content .env | Where-Object { $_ -match "^DB_POSTGRES_PASSWORD=" }) -replace "^DB_POSTGRES_PASSWORD=",""
-    $env:PGUSER = (Get-Content .env | Where-Object { $_ -match "^DB_POSTGRES_USER=" }) -replace "^DB_POSTGRES_USER=",""
-    $env:PGDATABASE = (Get-Content .env | Where-Object { $_ -match "^DB_POSTGRES_DB=" }) -replace "^DB_POSTGRES_DB=",""
-
-    # 3. Test PostgreSQL connection
-    docker-compose -f docker-compose-postgres.yml exec postgres `
-        psql -U "$env:PGUSER" -d "$env:PGDATABASE" -c "SELECT version();"
-
-    # 4. Initialize databases (if you have initialization scripts)
-    docker-compose -f docker-compose-postgres.yml exec postgres `
-        psql -U "$env:PGUSER" -d "$env:PGDATABASE" -f /scripts/01-create-databases.sql
-
-    # 5. Verify databases were created
-    docker-compose -f docker-compose-postgres.yml exec postgres `
-        psql -U "$env:PGUSER" -d "$env:PGDATABASE" -c "SELECT datname FROM pg_database WHERE datname LIKE 'Mango_%';"
-
-} finally {
-    # 6. Clear sensitive environment variables
-    Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
-    Remove-Item Env:\PGUSER -ErrorAction SilentlyContinue
-    Remove-Item Env:\PGDATABASE -ErrorAction SilentlyContinue
-}
-```
-
-### 4. Verify Services
-
-```powershell
-# Check all container statuses
-docker-compose ps
-
-# View logs
-docker-compose logs -f
-
-# Check specific service logs
-docker-compose logs sqlserver
-docker-compose logs postgres
-docker-compose logs rabbitmq
-docker-compose logs redis
-```
-
-### 5. Development Commands
-
-```powershell
-# Update database with migrations
-dotnet ef database update
-
-# Remove last migration
-dotnet ef migrations remove
-
-# Drop database
-dotnet ef database drop --force
-
-# Update EF Tools
-dotnet tool update --global dotnet-ef
-```
-
-### 6. Cleanup
-
-```powershell
-# Stop all containers
-docker-compose down
-
-# Remove volumes (careful - destroys data)
-docker-compose down -v
-
-# Remove all containers and images
-docker-compose down --rmi all
-```
-
-```bash
--cd API:
-nuget:
-	<PackageReference Include="AutoMapper" Version="14.0.0" />
-	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
-	<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.17" />
-	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
-	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
-	<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5">
-		<PrivateAssets>all</PrivateAssets>
-		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	</PackageReference>
-	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-
--cmd of API:
--- dotnet tool install --global dotnet-ef --version 9.0.4
--- dotnet ef
--- dotnet ef migrations add InitialCreate -o Data/Migrations
--- dotnet ef database update
-
--want to delete migrations added ?
--- dotnet ef migrations remove
-
--want to restore all database?
--- dotnet ef database drop
-
--update latest version of ef
--- dotnet tool update --global dotnet-ef
-
--- migrations PostgreSQL, SQLServer
-
-dotnet ef migrations add InitialCreate --context PostgreSqlAppDbContext --output-dir Migrations/PostgreSQL
-
-dotnet ef migrations add InitialCreate --context SqlServerAppDbContext --output-dir Migrations/SqlServer
-
-```
-
-> Azure Service Bus
-
-```bash
-# 1. created
-# 1.1. Azure: serviceBus, queue or TopicName
--- created new Service Bus (service)
--- created new Queue or Topic Name (include)
--- get config from Azure Service Bus: Settings: Shared access policies
-# 1.2. Coding:  new classLibrary and IMessageBus, MessageBus | IAzureServiceBusConsumer, AzureServiceBusConsumer
-# 1.2.1:  new classLibrary and IMessageBus, MessageBus
--- created new classLibrary => nuget: added Azure.Messaging.ServiceBus
--- created new IMessageBus and MessageBus
--- add config TopicAndQueueNames (map with name of Azure created)
-
--- MessageBus implement: create function PublishMessage (object message, string topicQueueName) :
-	- created ServiceBusSender with topicQueueName
-	- created ServiceBusMessage with message and with id == new generate UUID
-
--- created IAzureServiceBusConsumer, AzureServiceBusConsumer
-
-# 1.2.2:  new IAzureServiceBusConsumer, AzureServiceBusConsumer
--- AzureServiceBusConsumer implement:
-	# constructor
- 	- CreateProcessor for Queue or Topic Name (ValidateEntityName)
-	# Start function () => executed when this.IApplicationBuilder(this app) start
-	- Start	Processor
-	- Register function listening event from queue (PublishMessage executed) with _registerNameProcessor
-
-	# Stop function () => executed when this.IApplicationBuilder(this app) stop
-	- Stops the Azure Service Bus and disposes of the processors.
-
-# 2. Coding: Implement service bus receiver
--- Reference classLibrary: Azure.Messaging.ServiceBus
--- Using PublishMessage function with message and topicQueueName needed.
-```
+This architecture provides a complete e-commerce platform with microservices handling distinct business domains, shared infrastructure for cross-cutting concerns, and both synchronous and asynchronous communication patterns for optimal performance and scalability.
