@@ -6,31 +6,27 @@ using Mango.Services.OrderAPI.Models.Dto.Order;
 
 namespace Mango.Services.OrderAPI
 {
-    public class MappingConfig
+    public class MappingConfig : Profile
     {
-        public static MapperConfiguration RegisterMaps()
+        public MappingConfig()
         {
-            var mappingConfig = new MapperConfiguration(config =>
-            {
-                config.CreateMap<OrderHeaderDto, CartHeaderDto>()
-                .ForMember(dest => dest.CartTotal, u => u.MapFrom(src => src.OrderTotal))
-                .ReverseMap();
+            CreateMap<OrderHeaderDto, CartHeaderDto>()
+            .ForMember(dest => dest.CartTotal, u => u.MapFrom(src => src.OrderTotal))
+            .ReverseMap();
 
-                config.CreateMap<CartDetailsDto, OrderDetailsDto>()
-                .ForMember(dest => dest.ProductName, u => u.MapFrom(src => src.Product.Name))
-                .ForMember(dest => dest.Price, u => u.MapFrom(src => src.Product.Price));
+            CreateMap<CartDetailsDto, OrderDetailsDto>()
+            .ForMember(dest => dest.ProductName, u => u.MapFrom(src => src.Product.Name))
+            .ForMember(dest => dest.Price, u => u.MapFrom(src => src.Product.Price));
 
-                config.CreateMap<OrderDetailsDto, CartDetailsDto>();
+            CreateMap<OrderDetailsDto, CartDetailsDto>();
 
-                config.CreateMap<OrderHeaderDto, OrderHeader>()
-               .Ignore(x => x.CreatedAt)
-               .Ignore(x => x.UpdatedAt);
+            CreateMap<OrderHeaderDto, OrderHeader>()
+           .Ignore(x => x.CreatedAt)
+           .Ignore(x => x.UpdatedAt);
 
-                config.CreateMap<OrderHeader, OrderHeaderDto>();
+            CreateMap<OrderHeader, OrderHeaderDto>();
 
-                config.CreateMap<OrderDetailsDto, OrderDetails>().ReverseMap();
-            });
-            return mappingConfig;
+            CreateMap<OrderDetailsDto, OrderDetails>().ReverseMap();
         }
     }
 }

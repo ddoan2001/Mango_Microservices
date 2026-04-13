@@ -6,23 +6,19 @@ using Mango.Services.ProductAPI.Models.Dto.Filters;
 
 namespace Mango.Services.ProductAPI
 {
-    public class MappingConfig
+    public class MappingConfig : Profile
     {
-        public static MapperConfiguration RegisterMaps()
+        public MappingConfig()
         {
-            var mappingConfig = new MapperConfiguration(config =>
-            {
-                config.CreateMap<UpdateProductDto, Product>()
-                .Ignore(x => x.CreatedAt)
-                .Ignore(x => x.UpdatedAt)
-                .Ignore(x => x.ImageLocalPath)
-                .ReverseMap();
-                config.CreateMap<CreateProductDto, Product>().ReverseMap();
-                config.CreateMap<ProductDto, Product>().ReverseMap();
-                config.CreateMap<CategoryDto, Category>().ReverseMap();
-                config.CreateMap<BrandDto, Brand>().ReverseMap();
-            });
-            return mappingConfig;
+            CreateMap<UpdateProductDto, Product>()
+            .Ignore(x => x.CreatedAt)
+            .Ignore(x => x.UpdatedAt)
+            .Ignore(x => x.ImageLocalPath)
+            .ReverseMap();
+            CreateMap<CreateProductDto, Product>().ReverseMap();
+            CreateMap<ProductDto, Product>().ReverseMap();
+            CreateMap<CategoryDto, Category>().ReverseMap();
+            CreateMap<BrandDto, Brand>().ReverseMap();
         }
     }
 }
