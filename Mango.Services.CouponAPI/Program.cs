@@ -10,16 +10,18 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 // Configure log4net
-var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly());
 XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 // Add services to the container.
 
 // Read provider from config and configure database
 builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
 
-IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
-builder.Services.AddSingleton(mapper);
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// Configure AutoMapper
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<MappingConfig>();
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

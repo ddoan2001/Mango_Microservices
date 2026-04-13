@@ -17,15 +17,17 @@ using Mango.Common.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure log4net
-var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly());
 XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 
 // Add database provider using shared extensions
 builder.AddDatabaseProvider<PostgreSqlAppDbContext, SqlServerAppDbContext, AppDbContext>();
 
-IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
-builder.Services.AddSingleton(mapper);
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// Configure AutoMapper
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<MappingConfig>();
+});
 
 // Configure RabbitMQ connection options
 builder.Services.Configure<RabbitMQConnectionOptions>(builder.Configuration.GetSection(RabbitMQConnectionOptions.SectionName));

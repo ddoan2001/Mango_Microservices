@@ -33,9 +33,11 @@ builder.Services.AddStackExchangeRedisCache(option =>
     option.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
 });
 
-IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
-builder.Services.AddSingleton(mapper);
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// Configure AutoMapper
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<MappingConfig>();
+});
 
 builder.Services.AddControllers();
 
