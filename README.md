@@ -1,5 +1,23 @@
 # 🏗️ **MANGO MICROSERVICES ARCHITECTURE OVERVIEW**
 
+## 📋 **TECHNICAL REQUIREMENTS**
+
+### **Prerequisites**
+- **.NET 10.0** or later
+- **Visual Studio 2022** or **VS Code** with C# extension
+- **Docker Desktop** (for containerized services)
+- **PostgreSQL** or **SQL Server** database
+- **Redis** (for caching)
+- **RabbitMQ** (for messaging)
+
+### **Development Tools**
+- **Postman** or similar API testing tool
+- **Git** for version control
+- **Azure Account** (optional, for Azure Service Bus)
+- **Stripe Account** (for payment processing)
+
+---
+
 ## **🔐 1. AuthAPI (Authentication Service)**
 **Port: 7002**
 - **User Management**: Registration, login, role-based authentication

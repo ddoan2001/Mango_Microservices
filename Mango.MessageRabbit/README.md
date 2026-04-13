@@ -13,7 +13,7 @@ A comprehensive RabbitMQ messaging library for .NET 8 that provides unified cons
 
 ## 📦 Package Information
 
-- **Target Framework**: .NET 8.0
+- **Target Framework**: .NET 10.0
 - **Nullable Reference Types**: Enabled
 - **Dependencies**:
   - RabbitMQ.Client 7.1.2
